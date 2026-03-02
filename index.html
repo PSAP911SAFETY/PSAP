@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TelecomRef — 4G LTE & 5G NR Technical Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   GLOBAL RESET & SHARED TOKENS
+═══════════════════════════════════════════ */
+:root {
+  /* Dark palette (topbar, article, home) */
+  --dk-bg:       #0d1117;
+  --dk-bg2:      #161b22;
+  --dk-bg3:      #1c2230;
+  --dk-border:   #30363d;
+  --dk-border2:  #21262d;
+  --dk-text:     #e6edf3;
+  --dk-text2:    #8b949e;
+  --dk-text3:    #6e7681;
+  --dk-surface:  #ffffff08;
+  /* Light palette (call-flows page) */
+  --lt-bg:       #f4f6f9;
+  --lt-surface:  #ffffff;
+  --lt-surface2: #f0f2f5;
+  --lt-border:   #dde1e8;
+  --lt-text:     #1a1e2e;
+  --lt-muted:    #6b7280;
+  /* Accent colours */
+  --amber:  #f0a500;
+  --amber2: #e05c1a;
+  --green:  #3fb950;
+  --blue:   #58a6ff;
+  --teal:   #39d0d8;
+  --red:    #f85149;
+  --purple: #bc8cff;
+  /* Call-flow colours */
+  --c4g:   #1a5fa8;
+  --c5g:   #0f8a5f;
+  --cvo:   #7c3aed;
+  --ce9:   #c0392b;
+  --ce9n:  #d4680a;
+  --c5e9:  #0e6f6f;
+  --c5e9n: #6b3fa0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: var(--dk-bg); color: var(--dk-text); }
+
+/* ═══════════════════════════════════════════
+   PAGE VISIBILITY — single-file routing
+═══════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   SHARED TOPBAR (all pages)
+═══════════════════════════════════════════ */
+.topbar {
+  background: var(--dk-bg2);
+  border-bottom: 1px solid var(--dk-border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 54px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--dk-text);
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+.logo span { color: var(--amber); }
+.topbar-nav { display: flex; list-style: none; }
+.topbar-nav li a, .topbar-nav li button {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--dk-text2);
+  padding: 0 1rem;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.topbar-nav li a:hover,
+.topbar-nav li button:hover { color: var(--dk-text); background: var(--dk-surface); }
+.topbar-nav li a.active,
+.topbar-nav li button.active { color: var(--amber); border-bottom-color: var(--amber); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+.chip {
+  display: inline-flex; align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.63rem; font-weight: 500;
+  padding: 2px 8px; border-radius: 20px; border: 1px solid;
+  white-space: nowrap;
+}
+.chip-e911  { background:#f8514910; border-color:#f8514935; color:var(--red); }
+.chip-cmas  { background:#f0a50010; border-color:#f0a50035; color:var(--amber); }
+.chip-5g    { background:#3fb95010; border-color:#3fb95035; color:var(--green); }
+.chip-4g    { background:#58a6ff10; border-color:#58a6ff35; color:var(--blue); }
+.chip-ims   { background:#39d0d810; border-color:#39d0d835; color:var(--teal); }
+.chip-spec  { background:#bc8cff10; border-color:#bc8cff35; color:var(--purple); }
+.chip-ng911 { background:#e05c1a10; border-color:#e05c1a35; color:var(--amber2); }
+
+/* ═══════════════════════════════════════════
+   PAGE 1: HOME
+═══════════════════════════════════════════ */
+#page-home { background: var(--dk-bg); min-height: calc(100vh - 54px); }
+
+/* Hero */
+.home-hero {
+  background: var(--dk-bg2);
+  border-bottom: 1px solid var(--dk-border);
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, #f0a50018 0%, transparent 70%),
+              radial-gradient(ellipse 40% 30% at 20% 80%, #58a6ff0c 0%, transparent 60%),
+              radial-gradient(ellipse 40% 30% at 80% 80%, #3fb95008 0%, transparent 60%);
+  pointer-events: none;
+}
+.home-hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 1.2rem;
+}
+.home-hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--dk-text);
+  margin-bottom: 1.2rem;
+}
+.home-hero h1 .hl4 { color: #60a5fa; }
+.home-hero h1 .hl5 { color: #34d399; }
+.home-hero h1 .hle { color: var(--red); }
+.home-hero-sub {
+  font-family: 'Source Serif 4', serif;
+  font-size: 1.05rem;
+  color: var(--dk-text2);
+  max-width: 580px;
+  margin: 0 auto 2rem;
+  line-height: 1.7;
+  font-weight: 300;
+  font-style: italic;
+}
+.hero-chips { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.65rem 1.4rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+}
+.btn-primary { background: var(--amber); color: #000; border-color: var(--amber); }
+.btn-primary:hover { background: #ffc033; border-color: #ffc033; }
+.btn-outline { background: transparent; color: var(--dk-text); border-color: var(--dk-border); }
+.btn-outline:hover { background: var(--dk-surface); border-color: var(--dk-text2); }
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border-top: 1px solid var(--dk-border);
+  border-bottom: 1px solid var(--dk-border);
+  background: var(--dk-bg);
+}
+.stat-item {
+  padding: 1.2rem 2.5rem;
+  text-align: center;
+  border-right: 1px solid var(--dk-border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--dk-text);
+  display: block;
+}
+.stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dk-text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Feature cards */
+.home-section {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 3.5rem 2rem;
+}
+.home-section-head {
+  margin-bottom: 1.8rem;
+}
+.home-section-head .eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.home-section-head h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--dk-text);
+}
+.home-section-head p {
+  color: var(--dk-text2);
+  font-size: 0.88rem;
+  margin-top: 0.4rem;
+  font-family: 'Source Serif 4', serif;
+}
+
+/* Main content cards grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+@media(max-width:720px){ .content-grid { grid-template-columns: 1fr; } }
+
+.content-card {
+  background: var(--dk-bg2);
+  border: 1px solid var(--dk-border);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  display: block;
+}
+.content-card:hover {
+  border-color: var(--amber);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px #f0a50015;
+  text-decoration: none;
+}
+.card-accent-bar { height: 4px; }
+.bar-callflows { background: linear-gradient(90deg, var(--c4g), var(--c5g)); }
+.bar-article   { background: linear-gradient(90deg, var(--red), var(--amber)); }
+
+.card-body { padding: 1.5rem 1.4rem; }
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dk-text3);
+}
+.card-body h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--dk-text);
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+.card-body p {
+  font-size: 0.83rem;
+  color: var(--dk-text2);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-family: 'Source Serif 4', serif;
+}
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.4rem;
+  border-top: 1px solid var(--dk-border2);
+  background: var(--dk-surface);
+}
+.card-footer-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.card-arrow {
+  font-size: 1rem;
+  color: var(--dk-text3);
+  transition: transform 0.18s, color 0.18s;
+}
+.content-card:hover .card-arrow { transform: translateX(4px); color: var(--amber); }
+
+/* Flow tag grid */
+.flow-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+.flow-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+.ft-4g   { background:#1a5fa812; border-color:#1a5fa835; color:var(--c4g); }
+.ft-5g   { background:#0f8a5f12; border-color:#0f8a5f35; color:var(--c5g); }
+.ft-vo   { background:#7c3aed12; border-color:#7c3aed35; color:var(--cvo); }
+.ft-e9   { background:#c0392b12; border-color:#c0392b35; color:var(--ce9); }
+.ft-cmas { background:#f0a50012; border-color:#f0a50035; color:var(--amber); }
+.ft-ng   { background:#e05c1a12; border-color:#e05c1a35; color:var(--amber2); }
+
+/* Bottom topic grid */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.topic-card {
+  background: var(--dk-bg2);
+  border: 1px solid var(--dk-border);
+  border-radius: 8px;
+  padding: 1.1rem 1.1rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+.topic-card:hover { border-color: var(--amber); background: var(--dk-bg3); }
+.topic-icon { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.topic-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--dk-text);
+  margin-bottom: 0.25rem;
+}
+.topic-desc { font-size: 0.75rem; color: var(--dk-text3); line-height: 1.4; }
+.topic-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--dk-bg3);
+  color: var(--dk-text3);
+  border: 1px solid var(--dk-border);
+  margin-top: 0.5rem;
+}
+
+/* Home footer */
+.home-footer {
+  border-top: 1px solid var(--dk-border);
+  padding: 1.8rem 2rem;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--dk-text3);
+}
+.home-footer a { color: var(--dk-text2); }
+
+
+/* ═══════════════════════════════════════════
+   PAGE 2: CALL FLOWS  (light theme)
+═══════════════════════════════════════════ */
+#page-callflows { background: var(--lt-bg); }
+#page-callflows .cf-header {
+  background: #1a1e2e; color: #fff;
+  padding: 1.1rem 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+#page-callflows .cf-header h1 { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:700; }
+#page-callflows .cf-header h1 .lte { color:#60a5fa; }
+#page-callflows .cf-header h1 .nr  { color:#34d399; }
+#page-callflows .cf-header p { font-size:0.74rem; color:#9ca3af; margin-top:2px; }
+
+/* cf-nav = call-flows tab strip */
+#page-callflows .cf-nav {
+  background: var(--lt-surface);
+  border-bottom: 2px solid var(--lt-border);
+  padding: 0 1.5rem;
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+}
+#page-callflows .cf-nav button {
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:0.77rem; font-weight:500;
+  padding:0.8rem 1rem;
+  border:none; border-bottom:3px solid transparent;
+  background:transparent; color:var(--lt-muted);
+  cursor:pointer; white-space:nowrap;
+  display:flex; align-items:center; gap:0.35rem;
+  transition:all 0.15s;
+}
+#page-callflows .cf-nav button:hover { color:var(--lt-text); background:var(--lt-surface2); }
+#page-callflows .cf-nav button.active.t4g  { color:var(--c4g);  border-bottom-color:var(--c4g); }
+#page-callflows .cf-nav button.active.t5g  { color:var(--c5g);  border-bottom-color:var(--c5g); }
+#page-callflows .cf-nav button.active.tvo  { color:var(--cvo);  border-bottom-color:var(--cvo); }
+#page-callflows .cf-nav button.active.te9  { color:var(--ce9);  border-bottom-color:var(--ce9); }
+#page-callflows .cf-nav button.active.te9n { color:var(--ce9n); border-bottom-color:var(--ce9n); }
+#page-callflows .cf-nav button.active.t5e9  { color:var(--c5e9);  border-bottom-color:var(--c5e9); }
+#page-callflows .cf-nav button.active.t5e9n { color:var(--c5e9n); border-bottom-color:var(--c5e9n); }
+
+.dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.d4g{background:var(--c4g)} .d5g{background:var(--c5g)} .dvo{background:var(--cvo)}
+.de9{background:var(--ce9)} .de9n{background:var(--ce9n)}
+.d5e9{background:var(--c5e9)} .d5e9n{background:var(--c5e9n)}
+
+#page-callflows main { max-width:1280px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+.cf-panel { display:none; }
+.cf-panel.active { display:block; animation:fi 0.22s ease; }
+@keyframes fi { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+
+/* call-flow reusable components */
+.sec-head { margin-bottom:1.5rem; }
+.cf-tag {
+  display:inline-block; font-family:'IBM Plex Mono',monospace;
+  font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+  padding:2px 8px; border-radius:3px; margin-bottom:0.4rem;
+}
+.tg4{background:#dbeafe;color:var(--c4g)} .tg5{background:#d1fae5;color:var(--c5g)}
+.tgv{background:#ede9fe;color:var(--cvo)} .tge{background:#fde8e8;color:var(--ce9)}
+.tgen{background:#fff0e6;color:var(--ce9n)}
+.tg5e9{background:#ccf5f5;color:var(--c5e9)} .tg5e9n{background:#ede0ff;color:var(--c5e9n)}
+.sec-head h2 { font-family:'Syne',sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.3rem; color:var(--lt-text); }
+.sec-head p  { color:var(--lt-muted); font-size:0.83rem; max-width:700px; line-height:1.6; }
+.dw { background:var(--lt-surface); border:1px solid var(--lt-border); border-radius:10px; overflow:hidden; margin-bottom:1.5rem; }
+.dt { padding:0.65rem 1.1rem; background:var(--lt-surface2); border-bottom:1px solid var(--lt-border); font-weight:600; font-size:0.81rem; display:flex; align-items:center; gap:0.4rem; color:var(--lt-text); }
+.ds { overflow-x:auto; }
+.ds svg { display:block; }
+.cf-note { border-left:3px solid var(--lt-border); padding:0.7rem 1rem; background:var(--lt-surface); border-radius:0 6px 6px 0; font-size:0.8rem; color:var(--lt-muted); line-height:1.6; margin-bottom:1.5rem; }
+.cf-note strong { color:var(--lt-text); }
+.cf-cmp { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.2rem; }
+@media(max-width:560px){.cf-cmp{grid-template-columns:1fr}}
+.cf-cc { background:var(--lt-surface); border:1px solid var(--lt-border); border-radius:8px; overflow:hidden; }
+.cf-ch { padding:0.55rem 1rem; font-weight:600; font-size:0.79rem; border-bottom:1px solid var(--lt-border); background:var(--lt-surface2); }
+.cf-cb { padding:0.75rem 1rem; font-size:0.78rem; color:var(--lt-muted); line-height:1.65; }
+.cf-cb strong { color:var(--lt-text); }
+.hbox { background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:0.6rem 1rem; font-size:0.79rem; margin-bottom:1rem; display:flex; gap:0.5rem; align-items:flex-start; line-height:1.5; color:var(--lt-text); }
+.hbox.orange { background:#fff7ed; border-color:#fed7aa; }
+.dtbl { width:100%; border-collapse:collapse; font-size:0.77rem; background:var(--lt-surface); border:1px solid var(--lt-border); border-radius:8px; overflow:hidden; margin-top:1rem; }
+.dtbl th { background:var(--lt-surface2); padding:0.48rem 0.9rem; text-align:left; font-weight:600; border-bottom:1px solid var(--lt-border); font-family:'IBM Plex Mono',monospace; font-size:0.68rem; color:var(--lt-text); }
+.dtbl td { padding:0.48rem 0.9rem; border-bottom:1px solid var(--lt-border); color:var(--lt-muted); }
+.dtbl tr:last-child td { border-bottom:none; }
+.dtbl td:first-child { font-weight:500; color:var(--lt-text); width:155px; }
+#page-callflows footer { text-align:center; padding:1.2rem; font-size:0.68rem; color:var(--lt-muted); border-top:1px solid var(--lt-border); font-family:'IBM Plex Mono',monospace; background:var(--lt-surface); }
+
+/* ═══════════════════════════════════════════
+   PAGE 3: ARTICLE  (dark theme)
+═══════════════════════════════════════════ */
+#page-article { background: var(--dk-bg); }
+
+/* Article hero */
+.art-hero {
+  background: var(--dk-bg2);
+  border-bottom: 1px solid var(--dk-border);
+  padding: 3rem 2rem 2.5rem;
+}
+.art-hero-inner { max-width:900px; margin:0 auto; }
+.art-hero-meta {
+  display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:1rem;
+  font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--dk-text3);
+}
+.art-hero h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.7rem,4vw,2.6rem);
+  font-weight:800; line-height:1.12;
+  letter-spacing:-0.03em; color:var(--dk-text);
+  margin-bottom:0.9rem;
+}
+.art-hero h1 .hl-r { color:var(--red); }
+.art-hero h1 .hl-a { color:var(--amber); }
+.art-hero-sub { font-family:'Source Serif 4',serif; font-style:italic; font-size:1rem; color:var(--dk-text2); max-width:620px; line-height:1.65; margin-bottom:1.3rem; }
+.art-hero-chips { display:flex; gap:0.4rem; flex-wrap:wrap; }
+
+/* Article layout */
+.art-body {
+  max-width:1160px; margin:0 auto;
+  padding:2.5rem 2rem 5rem;
+  display:grid;
+  grid-template-columns:1fr 255px;
+  gap:3rem;
+  align-items:start;
+}
+@media(max-width:860px){ .art-body{grid-template-columns:1fr} .art-sidebar{display:none} }
+
+/* Article prose */
+.art-content { max-width:680px; font-family:'Source Serif 4',serif; font-weight:300; font-size:16.5px; line-height:1.75; }
+.art-content h2 {
+  font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700;
+  color:var(--dk-text); margin:2.5rem 0 0.65rem;
+  padding-top:0.2rem; border-top:1px solid var(--dk-border2);
+  letter-spacing:-0.02em; scroll-margin-top:70px;
+}
+.art-content h2:first-child { margin-top:0; border-top:none; }
+.art-content h3 { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; color:var(--dk-text); margin:1.6rem 0 0.45rem; letter-spacing:-0.01em; }
+.art-content h4 { font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:600; color:var(--amber); text-transform:uppercase; letter-spacing:0.1em; margin:1.3rem 0 0.35rem; }
+.art-content p { margin-bottom:1rem; color:var(--dk-text2); }
+.art-content p strong { color:var(--dk-text); font-weight:600; }
+.art-content code { font-family:'JetBrains Mono',monospace; font-size:0.82em; background:var(--dk-bg3); border:1px solid var(--dk-border); border-radius:3px; padding:1px 5px; color:var(--teal); }
+
+/* Callout */
+.callout { border-radius:8px; padding:0.9rem 1.1rem; margin:1.3rem 0; display:flex; gap:0.65rem; font-size:0.87rem; line-height:1.6; }
+.callout .ico { font-size:1rem; flex-shrink:0; margin-top:2px; }
+.callout-content { color:var(--dk-text2); }
+.callout-content strong { display:block; font-weight:700; margin-bottom:0.15rem; font-family:'Syne',sans-serif; font-size:0.88rem; color:var(--dk-text); }
+.callout.warn    { background:#f0a50010; border:1px solid #f0a50028; }
+.callout.danger  { background:#f8514910; border:1px solid #f8514928; }
+.callout.info    { background:#58a6ff10; border:1px solid #58a6ff28; }
+.callout.success { background:#3fb95010; border:1px solid #3fb95028; }
+
+/* Spec table */
+.spec-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin:1.3rem 0; border:1px solid var(--dk-border); border-radius:8px; overflow:hidden; }
+.spec-table th { background:var(--dk-bg3); padding:0.5rem 0.85rem; text-align:left; font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--dk-text3); text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid var(--dk-border); }
+.spec-table td { padding:0.5rem 0.85rem; border-bottom:1px solid var(--dk-border2); color:var(--dk-text2); vertical-align:top; line-height:1.5; }
+.spec-table tr:last-child td { border-bottom:none; }
+.spec-table td:first-child { color:var(--dk-text); font-weight:500; white-space:nowrap; }
+.spec-table tr:hover td { background:var(--dk-surface); }
+.vg { color:var(--green); font-family:'JetBrains Mono',monospace; font-size:0.78em; }
+.vr { color:var(--red);   font-family:'JetBrains Mono',monospace; font-size:0.78em; }
+.va { color:var(--amber); font-family:'JetBrains Mono',monospace; font-size:0.78em; }
+.vb { color:var(--blue);  font-family:'JetBrains Mono',monospace; font-size:0.78em; }
+
+/* Info card grid */
+.ic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:0.85rem; margin:1.3rem 0; }
+.ic { background:var(--dk-bg2); border:1px solid var(--dk-border); border-radius:8px; padding:0.9rem 1rem; }
+.ic-lbl { font-family:'JetBrains Mono',monospace; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--dk-text3); margin-bottom:0.3rem; }
+.ic-val { font-family:'Syne',sans-serif; font-size:1.25rem; font-weight:800; color:var(--dk-text); line-height:1.2; }
+.ic-sub { font-size:0.72rem; color:var(--dk-text3); margin-top:0.2rem; }
+
+/* Alert type cards */
+.ac-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:0.85rem; margin:1.3rem 0; }
+.ac { border-radius:8px; padding:0.9rem 1rem; border:1px solid; }
+.ac-type { font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.25rem; }
+.ac-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem; margin-bottom:0.35rem; color:var(--dk-text); }
+.ac-desc { font-size:0.77rem; line-height:1.55; color:var(--dk-text2); }
+.ac-id   { font-family:'JetBrains Mono',monospace; font-size:0.63rem; margin-top:0.4rem; opacity:0.65; color:var(--dk-text2); }
+.ac-pres { background:#f8514910; border-color:#f8514930; } .ac-pres .ac-type { color:var(--red); }
+.ac-imm  { background:#f0a50010; border-color:#f0a50030; } .ac-imm  .ac-type { color:var(--amber); }
+.ac-ambe { background:#58a6ff10; border-color:#58a6ff30; } .ac-ambe .ac-type { color:var(--blue); }
+.ac-test { background:#3fb95010; border-color:#3fb95030; } .ac-test .ac-type { color:var(--green); }
+
+/* Flow steps */
+.flow-steps { border:1px solid var(--dk-border); border-radius:8px; overflow:hidden; margin:1.3rem 0; counter-reset:fstep; }
+.flow-step { display:grid; grid-template-columns:40px 1fr; border-bottom:1px solid var(--dk-border2); transition:background 0.12s; }
+.flow-step:last-child { border-bottom:none; }
+.flow-step:hover { background:var(--dk-surface); }
+.flow-step-num { counter-increment:fstep; display:flex; align-items:flex-start; justify-content:center; padding-top:0.85rem; font-family:'JetBrains Mono',monospace; font-size:0.63rem; font-weight:600; color:var(--dk-text3); }
+.flow-step-body { padding:0.7rem 1rem 0.7rem 0.25rem; }
+.fs-msg   { font-family:'JetBrains Mono',monospace; font-size:0.76rem; font-weight:600; color:var(--dk-text); margin-bottom:0.12rem; }
+.fs-route { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--amber); margin-bottom:0.2rem; }
+.fs-desc  { font-size:0.8rem; color:var(--dk-text2); line-height:1.55; font-family:'Source Serif 4',serif; }
+
+/* Msg format */
+.msg-fmt { background:var(--dk-bg3); border:1px solid var(--dk-border); border-radius:8px; padding:1rem 1.1rem; margin:1.2rem 0; font-family:'JetBrains Mono',monospace; font-size:0.76rem; line-height:1.8; overflow-x:auto; }
+.mf-row { display:flex; gap:0.5rem; align-items:baseline; }
+.mf-f { color:var(--dk-text3); min-width:190px; flex-shrink:0; }
+.mf-v { color:var(--teal); }
+.mf-v.a { color:var(--amber); }
+.mf-v.r { color:var(--red); }
+.mf-v.g { color:var(--green); }
+.mf-v.b { color:var(--blue); }
+.mf-c { color:var(--dk-text3); font-size:0.68rem; margin-left:auto; }
+.mf-sep { border:none; border-top:1px solid var(--dk-border2); margin:0.4rem 0; }
+
+/* Two-col */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; margin:1.3rem 0; }
+@media(max-width:480px){.two-col{grid-template-columns:1fr}}
+.tcc { background:var(--dk-bg2); border:1px solid var(--dk-border); border-radius:8px; overflow:hidden; }
+.tcc-head { padding:0.55rem 0.9rem; font-family:'Syne',sans-serif; font-weight:700; font-size:0.79rem; border-bottom:1px solid var(--dk-border); background:var(--dk-bg3); }
+.tcc-body { padding:0.75rem 0.9rem; font-size:0.79rem; color:var(--dk-text2); line-height:1.65; }
+.tcc-body strong { color:var(--dk-text); }
+
+/* Timeline */
+.timeline { margin:1.3rem 0; position:relative; }
+.timeline::before { content:''; position:absolute; left:13px; top:0; bottom:0; width:2px; background:var(--dk-border); }
+.tl-item { display:flex; gap:0.9rem; padding:0 0 1.3rem 0; position:relative; }
+.tl-dot { width:26px; height:26px; border-radius:50%; border:2px solid var(--dk-border); background:var(--dk-bg2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.58rem; font-family:'JetBrains Mono',monospace; z-index:1; }
+.tl-dot.a { border-color:var(--amber); background:var(--amber); color:#000; font-weight:700; }
+.tl-dot.g { border-color:var(--green); background:var(--green); color:#000; }
+.tl-dot.b { border-color:var(--blue);  background:var(--blue);  color:#000; }
+.tl-dot.r { border-color:var(--red);   background:var(--red);   color:#fff; }
+.tl-body { padding-top:2px; }
+.tl-yr  { font-family:'JetBrains Mono',monospace; font-size:0.67rem; color:var(--dk-text3); margin-bottom:0.15rem; }
+.tl-ttl { font-family:'Syne',sans-serif; font-size:0.88rem; font-weight:700; color:var(--dk-text); margin-bottom:0.15rem; }
+.tl-dsc { font-size:0.79rem; color:var(--dk-text2); line-height:1.55; }
+
+/* Article horizontal rule */
+.art-hr { border:none; border-top:1px solid var(--dk-border2); margin:2.5rem 0; }
+
+/* Sidebar */
+.art-sidebar { position:sticky; top:70px; }
+.sb-box { background:var(--dk-bg2); border:1px solid var(--dk-border); border-radius:8px; overflow:hidden; margin-bottom:1rem; }
+.sb-head { padding:0.55rem 0.9rem; font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--dk-text3); border-bottom:1px solid var(--dk-border2); background:var(--dk-bg3); }
+.toc { padding:0.4rem 0; list-style:none; }
+.toc li a { display:block; padding:0.25rem 0.9rem; font-family:'Syne',sans-serif; font-size:0.75rem; font-weight:600; color:var(--dk-text2); border-left:2px solid transparent; transition:all 0.15s; text-decoration:none; }
+.toc li a:hover { color:var(--dk-text); border-left-color:var(--amber); background:var(--dk-surface); }
+.toc li.sub a { padding-left:1.5rem; font-weight:400; font-size:0.7rem; color:var(--dk-text3); }
+.sb-specs { padding:0.65rem 0.9rem; }
+.sb-row { display:flex; justify-content:space-between; align-items:baseline; padding:0.27rem 0; border-bottom:1px solid var(--dk-border2); font-size:0.75rem; }
+.sb-row:last-child { border-bottom:none; }
+.sb-k { color:var(--dk-text3); font-family:'JetBrains Mono',monospace; font-size:0.67rem; }
+.sb-v { color:var(--dk-text); font-weight:500; font-family:'JetBrains Mono',monospace; font-size:0.68rem; }
+
+/* Article footer */
+#page-article footer { border-top:1px solid var(--dk-border); padding:1.5rem 2rem; background:var(--dk-bg2); }
+.art-footer-inner { max-width:1160px; margin:0 auto; }
+.art-footer-inner h3 { font-family:'Syne',sans-serif; font-size:0.78rem; font-weight:700; color:var(--dk-text3); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem; }
+.related-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:0.85rem; }
+.rc { background:var(--dk-bg); border:1px solid var(--dk-border); border-radius:8px; padding:0.9rem 1rem; cursor:pointer; transition:border-color 0.15s, background 0.15s; }
+.rc:hover { border-color:var(--amber); background:var(--dk-bg2); }
+.rc-meta { display:flex; gap:0.35rem; align-items:center; margin-bottom:0.4rem; }
+.rc-title { font-family:'Syne',sans-serif; font-size:0.86rem; font-weight:700; color:var(--dk-text); margin-bottom:0.25rem; line-height:1.3; }
+.rc-desc { font-size:0.75rem; color:var(--dk-text2); line-height:1.5; }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:600px){
+  .topbar-nav li a, .topbar-nav li button { padding:0 0.6rem; font-size:0.72rem; }
+  .home-hero { padding:3rem 1.2rem 2.5rem; }
+  .stats-bar { flex-wrap:wrap; }
+  .stat-item { flex:1 1 50%; border-right:none; border-bottom:1px solid var(--dk-border); }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     SHARED TOPBAR
+═══════════════════════════════════════════════════════ -->
+<header class="topbar" id="topbar">
+  <a class="logo" onclick="navTo('home')">Telecom<span>Ref</span></a>
+  <nav>
+    <ul class="topbar-nav">
+      <li><button id="nav-home"      class="active" onclick="navTo('home')">Home</button></li>
+      <li><button id="nav-callflows" onclick="navTo('callflows')">📊 Call Flows</button></li>
+      <li><button id="nav-article"   onclick="navTo('article')">📖 E911 &amp; CMAS</button></li>
+    </ul>
+  </nav>
+  <div class="topbar-right">
+    <span class="chip chip-e911">E911</span>
+    <span class="chip chip-cmas">CMAS</span>
+    <span class="chip chip-5g">5G NR</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 1 — HOME
+═══════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <section class="home-hero">
+    <div class="home-hero-eyebrow">3GPP Technical Reference · 4G LTE · 5G NR</div>
+    <h1>
+      <span class="hl4">4G LTE</span> &amp; <span class="hl5">5G NR</span><br>
+      <span class="hle">Emergency</span> &amp; Call Flow Reference
+    </h1>
+    <p class="home-hero-sub">
+      Interactive signal flow diagrams and deep-dive technical articles covering E911 emergency calling, CMAS/WEA alert systems, IMS/VoLTE, and 3GPP standard procedures.
+    </p>
+    <div class="hero-chips">
+      <span class="chip chip-e911">E911 / NG911</span>
+      <span class="chip chip-cmas">CMAS / WEA</span>
+      <span class="chip chip-5g">5G NR Registration</span>
+      <span class="chip chip-4g">4G LTE Attach</span>
+      <span class="chip chip-ims">VoLTE / IMS</span>
+      <span class="chip chip-ng911">NG911 i3</span>
+      <span class="chip chip-spec">3GPP Standards</span>
+    </div>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="navTo('callflows')">▶ View Call Flows</button>
+      <button class="btn btn-outline" onclick="navTo('article')">📖 Read Article</button>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-val">9</span><span class="stat-lbl">Signal Flow Diagrams</span></div>
+    <div class="stat-item"><span class="stat-val">130+</span><span class="stat-lbl">Signaling Steps</span></div>
+    <div class="stat-item"><span class="stat-val">22</span><span class="stat-lbl">Min Read · Article</span></div>
+    <div class="stat-item"><span class="stat-val">15+</span><span class="stat-lbl">3GPP Specs Referenced</span></div>
+  </div>
+
+  <div class="home-section">
+    <div class="home-section-head">
+      <span class="eyebrow">Content Library</span>
+      <h2>Two Resources, One Reference Site</h2>
+      <p>Start with the interactive call flow diagrams or read the in-depth technical article — both in one place.</p>
+    </div>
+
+    <div class="content-grid">
+      <!-- Call Flows Card -->
+      <div class="content-card" onclick="navTo('callflows')">
+        <div class="card-accent-bar bar-callflows"></div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="chip chip-4g">4G LTE</span>
+            <span class="chip chip-5g">5G NR</span>
+            <span class="card-type">· Interactive Tool</span>
+          </div>
+          <h3>Signal Flow Diagrams</h3>
+          <p>Animated sequence diagrams showing message-by-message signaling flows between UE, base stations, and core network functions. Each step includes protocol details and plain-English descriptions.</p>
+          <div class="flow-tags">
+            <span class="flow-tag ft-4g">LTE Attach</span>
+            <span class="flow-tag ft-5g">5G Registration</span>
+            <span class="flow-tag ft-vo">VoLTE / IMS</span>
+            <span class="flow-tag ft-e9">E911 (4G &amp; 5G)</span>
+            <span class="flow-tag ft-e9">No-SIM E911</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-footer-chips">
+            <span class="chip chip-spec">TS 23.401</span>
+            <span class="chip chip-spec">TS 23.502</span>
+            <span class="chip chip-spec">TS 24.229</span>
+          </div>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+
+      <!-- Article Card -->
+      <div class="content-card" onclick="navTo('article')">
+        <div class="card-accent-bar bar-article"></div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="chip chip-e911">E911</span>
+            <span class="chip chip-cmas">CMAS</span>
+            <span class="card-type">· Technical Article · 22 min</span>
+          </div>
+          <h3>E911 &amp; CMAS Deep Dive</h3>
+          <p>Comprehensive engineering article covering E911 Phase II location technologies, NG911 i3 architecture, CMAS/WEA alert types and CBS message format, WEA geo-targeting evolution, and 5G NR positioning enhancements.</p>
+          <div class="flow-tags">
+            <span class="flow-tag ft-e9">E911 Architecture</span>
+            <span class="flow-tag ft-cmas">CMAS / WEA</span>
+            <span class="flow-tag ft-ng">NG911 / i3</span>
+            <span class="flow-tag ft-5g">5G Positioning</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-footer-chips">
+            <span class="chip chip-spec">TS 23.167</span>
+            <span class="chip chip-spec">TS 22.268</span>
+            <span class="chip chip-ng911">NENA i3</span>
+          </div>
+          <span class="card-arrow">→</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Topic quick-access grid -->
+    <div class="home-section-head" style="margin-top:1rem">
+      <span class="eyebrow">Quick Access</span>
+      <h2>Browse by Topic</h2>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card" onclick="navTo('callflows','lte')">
+        <div class="topic-icon">📶</div>
+        <div class="topic-name">4G LTE Attach</div>
+        <div class="topic-desc">EPS-AKA, MME, HSS, default bearer setup — 20 steps</div>
+        <div class="topic-badge">TS 23.401</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','nr')">
+        <div class="topic-icon">🔬</div>
+        <div class="topic-name">5G NR Registration</div>
+        <div class="topic-desc">AMF, AUSF, UDM, 5G-AKA, SUCI/SUPI — 22 steps</div>
+        <div class="topic-badge">TS 23.502</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','volte')">
+        <div class="topic-icon">📞</div>
+        <div class="topic-name">VoLTE / IMS Call</div>
+        <div class="topic-desc">IMS registration + MO call setup, QCI-1 bearer</div>
+        <div class="topic-badge">IR.92</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','e911')">
+        <div class="topic-icon">🚨</div>
+        <div class="topic-name">E911 — 4G with SIM</div>
+        <div class="topic-desc">E-CSCF, LRF, PIDF-LO location, PSAP routing</div>
+        <div class="topic-badge">TS 23.167</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','e911n')">
+        <div class="topic-icon">📵</div>
+        <div class="topic-name">E911 — 4G no SIM</div>
+        <div class="topic-desc">IMEI-only, NULL security, any-PLMN emergency</div>
+        <div class="topic-badge">TS 22.101</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','5e911')">
+        <div class="topic-icon">📡</div>
+        <div class="topic-name">E911 — 5G NR with SIM</div>
+        <div class="topic-desc">AMF, SMF, LMF, NR positioning, 5QI-1 PDU session</div>
+        <div class="topic-badge">TS 38.305</div>
+      </div>
+      <div class="topic-card" onclick="navTo('callflows','5e911n')">
+        <div class="topic-icon">🔕</div>
+        <div class="topic-name">E911 — 5G NR no SIM</div>
+        <div class="topic-desc">PEI-only, 5G-NIA0/NEA0 NULL, emergency DNN</div>
+        <div class="topic-badge">TS 22.101</div>
+      </div>
+      <div class="topic-card" onclick="navTo('article','cmas')">
+        <div class="topic-icon">⚠️</div>
+        <div class="topic-name">CMAS / WEA</div>
+        <div class="topic-desc">CBC, CBS, SIB6/7/8, FAG→CMG, WEA 3.0 geo-targeting</div>
+        <div class="topic-badge">TS 23.041</div>
+      </div>
+      <div class="topic-card" onclick="navTo('article','ng911')">
+        <div class="topic-icon">🏢</div>
+        <div class="topic-name">NG911 / i3</div>
+        <div class="topic-desc">ESInet, ESRP, ECRF, LoST, PIDF-LO, multimedia PSAP</div>
+        <div class="topic-badge">NENA-STA-010</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="home-footer">
+    <span>TelecomRef &nbsp;·&nbsp; 3GPP TS 23.401 · TS 23.502 · TS 23.167 · TS 22.268 · TS 24.229 · IR.92 &nbsp;·&nbsp; Educational Reference &nbsp;·&nbsp; 2026</span>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 2 — CALL FLOWS
+═══════════════════════════════════════════════════════ -->
+<div id="page-callflows" class="page">
+  <div class="cf-header">
+    <div>
+      <h1><span class="lte">4G LTE</span> &amp; <span class="nr">5G NR</span> — Signal Flow Diagrams</h1>
+      <p>Interactive 3GPP call flow diagrams · Select a procedure below</p>
+    </div>
+  </div>
+
+  <div class="cf-nav" id="cf-nav">
+    <button class="active t4g" onclick="cfShow('lte',this)"><span class="dot d4g"></span>4G LTE Attach</button>
+    <button class="t5g"        onclick="cfShow('nr',this)"><span class="dot d5g"></span>5G NR Registration</button>
+    <button class="tvo"        onclick="cfShow('volte',this)"><span class="dot dvo"></span>VoLTE / IMS Call</button>
+    <button class="te9"        onclick="cfShow('e911',this)"><span class="dot de9"></span>E911 (4G) with SIM</button>
+    <button class="te9n"       onclick="cfShow('e911n',this)"><span class="dot de9n"></span>E911 (4G) no SIM</button>
+    <button class="t5e9"       onclick="cfShow('5e911',this)"><span class="dot d5e9"></span>E911 (5G NR) with SIM</button>
+    <button class="t5e9n"      onclick="cfShow('5e911n',this)"><span class="dot d5e9n"></span>E911 (5G NR) no SIM</button>
+  </div>
+
+  <main>
+    <!-- LTE ATTACH -->
+    <div id="cfp-lte" class="cf-panel active">
+      <div class="sec-head">
+        <span class="cf-tag tg4">3GPP TS 23.401</span>
+        <h2>4G LTE Initial Attach Procedure</h2>
+        <p>Establishes UE identity, performs EPS-AKA mutual authentication, activates NAS security, and creates a default EPS bearer for IP data connectivity.</p>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot d4g"></span>LTE Attach — Signal Flow Diagram</div><div class="ds" id="d-lte"></div></div>
+      <div class="cf-note"><strong>Key Points:</strong> GUTI replaces IMSI after first attach for privacy. EPS-AKA provides mutual authentication via RAND/AUTN/RES exchange. NAS security (integrity + ciphering) activates before subscription data is fetched. The default bearer (QCI-9) delivers IP connectivity to the UE.</div>
+    </div>
+
+    <!-- 5G NR -->
+    <div id="cfp-nr" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tg5">3GPP TS 23.502</span>
+        <h2>5G NR Initial Registration Procedure</h2>
+        <p>Service-Based Architecture: NFs communicate via HTTP/2 REST APIs. SUCI conceals SUPI with ECIES public-key crypto. Network slicing (NSSAI) enables multiple logical networks over one infrastructure.</p>
+      </div>
+      <div class="cf-cmp">
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--c4g)">🏛️ 4G EPC — Reference Point</div><div class="cf-cb">Monolithic NFs via <strong>point-to-point interfaces</strong> (S1, S6a, S11, S5/S8). Fixed protocols per interface.</div></div>
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--c5g)">🔬 5G SBA — Service-Based</div><div class="cf-cb">Microservice NFs expose <strong>HTTP/2 REST APIs</strong>. NRF for discovery. SUPI/SUCI replace IMSI. Network slicing via NSSAI.</div></div>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot d5g"></span>5G NR Registration — Signal Flow Diagram</div><div class="ds" id="d-nr"></div></div>
+      <div class="cf-note"><strong>5G Enhancements:</strong> SUCI hides SUPI using ECIES — prevents IMSI catchers. 5G-AKA adds AUSF verification of HRES* to defeat false base stations. KAMF→KgNB key hierarchy separates NAS and AS security.</div>
+    </div>
+
+    <!-- VOLTE -->
+    <div id="cfp-volte" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tgv">3GPP TS 24.229 · IR.92</span>
+        <h2>VoLTE / IMS Voice Call Flow</h2>
+        <p>Voice over LTE uses IMS for SIP-based call control. A dedicated QCI-1 GBR bearer ensures ≤100ms one-way latency for HD Voice (AMR-WB codec).</p>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot dvo"></span>Phase 1 — IMS Registration</div><div class="ds" id="d-imsreg"></div></div>
+      <div class="dw" style="margin-top:1rem"><div class="dt"><span class="dot dvo"></span>Phase 2 — VoLTE MO Call Setup</div><div class="ds" id="d-volte"></div></div>
+      <div class="cf-note"><strong>Key Points:</strong> Two parallel EPS bearers: default (QCI-9) for SIP signaling + internet, dedicated GBR (QCI-1) for RTP voice media. P-CSCF is the SIP entry point; IPSec SA protects signaling.</div>
+    </div>
+
+    <!-- E911 SIM -->
+    <div id="cfp-e911" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tge">3GPP TS 23.167</span>
+        <h2>Emergency 911 — 4G LTE, UE with SIM</h2>
+        <p>Emergency calls receive highest network priority (ARP=1, preemption enabled). UE location (PIDF-LO) delivered to the PSAP. Callback guaranteed post-call.</p>
+      </div>
+      <div class="hbox"><span>🚨</span><div><strong>Priority Handling:</strong> Emergency bearers have ARP Priority Level 1 with preemption capability — can displace other bearers. Call never rejected due to congestion.</div></div>
+      <div class="dw"><div class="dt"><span class="dot de9"></span>Emergency 911 (4G, with SIM) — Signal Flow</div><div class="ds" id="d-e911"></div></div>
+      <div class="cf-note"><strong>FCC E911 Phase II:</strong> Horizontal location within 50m for 67% of calls. Floor-level z-axis accuracy for indoor calls. NG911 modernizes PSAPs to IP/i3.</div>
+    </div>
+
+    <!-- E911 NO SIM -->
+    <div id="cfp-e911n" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tgen">3GPP TS 22.101 §10.3</span>
+        <h2>Emergency 911 — 4G LTE, UE without SIM</h2>
+        <p>All cellular devices must support emergency calls regardless of SIM. IMEI-only identity, authentication skipped, any PLMN accepted, callback not possible.</p>
+      </div>
+      <div class="hbox orange"><span>⚠️</span><div><strong>No SIM Rules:</strong> No IMSI → no HSS lookup → no authentication. IMEI only. Emergency-only bearer. PSAP sees no phone number.</div></div>
+      <div class="cf-cmp">
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--ce9)">📱 With SIM</div><div class="cf-cb">IMSI identity. Full EPS-AKA. <strong>MSISDN to PSAP.</strong> Callback ~5 min.</div></div>
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--ce9n)">📵 Without SIM</div><div class="cf-cb">IMEI only. Auth skipped. <strong>Anonymous.</strong> Callback not possible.</div></div>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot de9n"></span>Emergency 911 (4G, no SIM) — Signal Flow</div><div class="ds" id="d-e911n"></div></div>
+      <table class="dtbl">
+        <tr><th>Aspect</th><th>With SIM</th><th>Without SIM</th></tr>
+        <tr><td>Identity</td><td>IMSI/SUCI + IMEI</td><td>IMEI only</td></tr>
+        <tr><td>Auth</td><td>EPS-AKA</td><td>Skipped</td></tr>
+        <tr><td>PLMN</td><td>Home preferred</td><td>Any PLMN</td></tr>
+        <tr><td>Callback</td><td>MSISDN available</td><td>Not possible</td></tr>
+        <tr><td>NAS Security</td><td>EEA + EIA</td><td>NULL (EEA0/EIA0)</td></tr>
+      </table>
+      <div class="cf-note" style="margin-top:1rem"><strong>FCC §20.18:</strong> All mobile phones must connect 911 calls regardless of SIM status.</div>
+    </div>
+
+    <!-- 5G E911 WITH SIM -->
+    <div id="cfp-5e911" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tg5e9">3GPP TS 23.502 · TS 23.167</span>
+        <h2>Emergency 911 — 5G NR, UE with SIM</h2>
+        <p>In 5G, emergency calls use IMS Emergency path via AMF and SMF. Location via NR Positioning (Rel-16+) delivered as PIDF-LO to PSAP.</p>
+      </div>
+      <div class="hbox"><span>🚨</span><div><strong>5G Priority:</strong> Emergency PDU Sessions granted highest 5QI priority with GBR. AMF ensures emergency access is never barred by slicing or congestion.</div></div>
+      <div class="cf-cmp">
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--ce9)">📟 4G LTE E911</div><div class="cf-cb">QCI-1 bearer via MME/S-GW/P-GW. Location via LPP/OTDOA/A-GNSS. E-CSCF → ESRP → PSAP.</div></div>
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--c5e9)">📡 5G NR E911</div><div class="cf-cb">5QI-1 PDU Session via AMF/SMF/UPF. Location via LMF (UL-TDOA, Multi-RTT). Same IMS path to PSAP.</div></div>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot d5e9"></span>Emergency 911 (5G NR, with SIM) — Signal Flow</div><div class="ds" id="d-5e911"></div></div>
+      <div class="cf-note"><strong>5G NR Positioning (Rel-16+):</strong> UL-TDOA, DL-TDOA, Multi-RTT, and enhanced A-GNSS deliver sub-3m accuracy. LMF replaces GMLC/E-SMLC. Barometric sensor (Rel-17) provides floor-level z-axis accuracy.</div>
+    </div>
+
+    <!-- 5G E911 NO SIM -->
+    <div id="cfp-5e911n" class="cf-panel">
+      <div class="sec-head">
+        <span class="cf-tag tg5e9n">3GPP TS 22.101 §10.3 · TS 23.502</span>
+        <h2>Emergency 911 — 5G NR, UE without SIM</h2>
+        <p>5G NR devices without USIM must still place 911 calls on any gNB/PLMN. AMF handles limited emergency registration with PEI-only identity, 5G-AKA skipped.</p>
+      </div>
+      <div class="hbox orange"><span>⚠️</span><div><strong>No SIM — 5G:</strong> No SUPI/SUCI → no UDM/AUSF lookup → no 5G-AKA. UE uses PEI (IMEI) only. AMF applies NULL security (5G-NIA0/5G-NEA0). Emergency DNN only.</div></div>
+      <div class="cf-cmp">
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--c5e9)">📡 5G NR E911 with SIM</div><div class="cf-cb">SUPI/SUCI. Full 5G-AKA. MSISDN to PSAP. Callback guaranteed. High-accuracy NR location.</div></div>
+        <div class="cf-cc"><div class="cf-ch" style="color:var(--c5e9n)">🔕 5G NR E911 no SIM</div><div class="cf-cb">PEI (IMEI) only. Auth skipped. NULL security. Anonymous. Callback impossible.</div></div>
+      </div>
+      <div class="dw"><div class="dt"><span class="dot d5e9n"></span>Emergency 911 (5G NR, no SIM) — Signal Flow</div><div class="ds" id="d-5e911n"></div></div>
+      <table class="dtbl">
+        <tr><th>Aspect</th><th>4G E911 no SIM</th><th>5G NR E911 no SIM</th></tr>
+        <tr><td>Identity</td><td>IMEI</td><td>PEI (IMEI/IMEISV)</td></div>
+        <tr><td>Auth</td><td>Skipped (EEA0/EIA0)</td><td>Skipped (5G-NEA0/NIA0)</td></tr>
+        <tr><td>Core</td><td>MME+S-GW+P-GW</td><td>AMF+SMF+UPF (SBA)</td></tr>
+        <tr><td>Location NF</td><td>GMLC / E-SMLC</td><td>LMF</td></tr>
+        <tr><td>Callback</td><td>Not possible</td><td>Not possible</td></tr>
+      </table>
+      <div class="cf-note" style="margin-top:1rem"><strong>FCC §20.18 &amp; 5G:</strong> Applies equally to 5G NR devices. 3GPP SA1 mandates this in TS 22.101 as a core 5G system requirement.</div>
+    </div>
+  </main>
+
+  <footer>3GPP TS 23.401 · TS 23.502 · TS 23.167 · TS 24.229 · IR.92 · IR.94 &nbsp;|&nbsp; Educational Reference · TelecomRef</footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE 3 — ARTICLE
+═══════════════════════════════════════════════════════ -->
+<div id="page-article" class="page">
+
+  <section class="art-hero">
+    <div class="art-hero-inner">
+      <div class="art-hero-meta">
+        <span class="chip chip-e911">E911</span>
+        <span class="chip chip-cmas">CMAS / WEA</span>
+        <span class="chip chip-5g">5G NR</span>
+        <span class="chip chip-4g">4G LTE</span>
+        &nbsp;·&nbsp; Feb 27, 2026 &nbsp;·&nbsp; 22 min read
+      </div>
+      <h1>Emergency <span class="hl-r">911</span> &amp; <span class="hl-a">CMAS</span> Alert Systems — Deep Technical Dive</h1>
+      <p class="art-hero-sub">How cellular networks route emergency calls, determine caller location, and broadcast mass-alert messages — from EPS architecture through 5G NR, NG911, and Wireless Emergency Alerts.</p>
+      <div class="art-hero-chips">
+        <span class="chip chip-spec">3GPP TS 23.167</span>
+        <span class="chip chip-spec">3GPP TS 22.268</span>
+        <span class="chip chip-spec">ATIS J-STD-101</span>
+        <span class="chip chip-ng911">NG911 / i3</span>
+        <span class="chip chip-ims">IMS / E-CSCF</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="art-body">
+    <article class="art-content">
+
+      <h2 id="a-overview">Overview</h2>
+      <p>Emergency communications over cellular networks involve two entirely different but complementary systems: <strong>E911 (Enhanced 911)</strong> for person-to-dispatcher voice calls, and <strong>CMAS/WEA (Commercial Mobile Alert System / Wireless Emergency Alerts)</strong> for network-to-subscriber broadcast warnings. Both systems have evolved from 2G circuit-switched origins to fully IP-based architectures in LTE and 5G NR.</p>
+      <p>This article breaks down both systems — their architecture, signaling flows, protocol stacks, location technologies, and the key 3GPP specifications that define them. We also cover the transition to <strong>NG911</strong> and enhancements introduced in 5G for both emergency calling and alert delivery.</p>
+
+      <div class="ic-grid">
+        <div class="ic"><div class="ic-lbl">E911 Priority</div><div class="ic-val">ARP = 1</div><div class="ic-sub">Highest Allocation Retention Priority; preemption enabled</div></div>
+        <div class="ic"><div class="ic-lbl">CMAS Alert Types</div><div class="ic-val">4 Classes</div><div class="ic-sub">Presidential · Imminent Threat · AMBER · RMT/Exercise</div></div>
+        <div class="ic"><div class="ic-lbl">Location Accuracy</div><div class="ic-val">&lt; 50 m</div><div class="ic-sub">FCC Phase II horizontal; floor-level for indoor (z-axis)</div></div>
+        <div class="ic"><div class="ic-lbl">WEA Geo-Targeting</div><div class="ic-val">0.1 mi²</div><div class="ic-sub">WEA 3.0 polygon-based cell broadcast targeting</div></div>
+      </div>
+
+      <h2 id="a-e911">Part 1 — Enhanced 911 (E911)</h2>
+      <h3>What is E911?</h3>
+      <p>E911 is the US standard (mandated by the FCC under <strong>47 CFR Part 20</strong>) for routing mobile emergency calls to the correct <strong>PSAP (Public Safety Answering Point)</strong> along with the caller's <strong>ANI (Automatic Number Identification)</strong> and <strong>ALI (Automatic Location Identification)</strong>. Equivalent standards exist globally: <strong>eCall (EU)</strong>, <strong>112 (ITU-T)</strong>, and <strong>999 (UK)</strong>.</p>
+      <p>Phase I E911 delivered callback number and cell tower. <strong>Phase II</strong> (2002) required precise GPS/network lat/lon coordinates. The ongoing <strong>NG911</strong> transition adds IP-based PSAPs, dispatchable floor-level location, and multimedia support.</p>
+
+      <h3>E911 Architecture Components</h3>
+      <table class="spec-table">
+        <tr><th>Component</th><th>Role</th><th>Interface</th><th>Standard</th></tr>
+        <tr><td>E-CSCF</td><td>Emergency CSCF — SIP proxy for emergency routing</td><td>Mw, Ml</td><td>TS 23.167</td></tr>
+        <tr><td>LRF / GMLC</td><td>Location Retrieval Function / Gateway Mobile Location Centre</td><td>Ml, Le</td><td>TS 29.172</td></tr>
+        <tr><td>ESRP</td><td>Emergency Services Routing Proxy — routes to PSAP by location</td><td>ESInet (i3)</td><td>NENA i3</td></tr>
+        <tr><td>PSAP</td><td>Public Safety Answering Point — 911 dispatch center</td><td>ESInet, PSTN</td><td>NENA i3</td></tr>
+        <tr><td>LMF</td><td>Location Management Function (5G) — replaces GMLC/E-SMLC</td><td>NLs, LPP</td><td>TS 38.305</td></tr>
+        <tr><td>E-SMLC</td><td>Enhanced Serving Mobile Location Centre (4G)</td><td>SLs, LPP</td><td>TS 36.305</td></tr>
+        <tr><td>P-CSCF</td><td>Proxy CSCF — first IMS hop; detects emergency SIP URI</td><td>Gm, Mw</td><td>TS 24.229</td></tr>
+      </table>
+
+      <h3>Emergency Call Detection (Priority Order)</h3>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-step-num">01</div><div class="flow-step-body"><div class="fs-msg">EF_ECC — SIM/USIM Emergency Call Codes</div><div class="fs-route">USIM Elementary File · Highest Priority</div><div class="fs-desc">The USIM stores up to 5 operator-defined emergency numbers in EF_ECC (3GPP TS 31.102). These override all other sources and are used when a valid SIM is present.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">02</div><div class="flow-step-body"><div class="fs-msg">SIB1 / SIB2 Emergency Number List</div><div class="fs-route">Broadcast from serving cell · Medium Priority</div><div class="fs-desc">The serving cell broadcasts local emergency numbers. In LTE: <code>SIB10/11</code>; in 5G NR: <code>SIB2 → emergencyNumberList</code>. Allows networks to inform UEs of country-specific numbers.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">03</div><div class="flow-step-body"><div class="fs-msg">UE Hardcoded List</div><div class="fs-route">Device firmware · Fallback (incl. no-SIM)</div><div class="fs-desc">Every UE maintains hardcoded universal emergency numbers: <code>911</code>, <code>112</code>, <code>999</code>, <code>000</code>, <code>110</code>. This list activates when no SIM is present or EF_ECC provides no data.</div></div></div>
+      </div>
+
+      <div class="callout danger">
+        <span class="ico">⚠️</span>
+        <div class="callout-content"><strong>No-SIM Emergency Access</strong>Per 3GPP TS 22.101 §10.3 and FCC 47 CFR §20.18, all cellular devices must connect emergency calls regardless of SIM. With no SIM: identity = IMEI/PEI only, authentication skipped, NULL security applied, any PLMN must accept. Callback not possible (no MSISDN).</div>
+      </div>
+
+      <h3 id="a-location">Location Technologies</h3>
+      <p>FCC E911 Phase II requires carriers to deliver caller location within <strong>50 meters</strong> for 67% of outdoor calls and floor-level accuracy (<strong>z-axis / dispatchable location</strong>) for indoor calls.</p>
+      <table class="spec-table">
+        <tr><th>Method</th><th>Technology</th><th>Accuracy</th><th>Gen</th><th>Notes</th></tr>
+        <tr><td>A-GNSS</td><td>Assisted GPS / GLONASS / Galileo</td><td class="vg">&lt; 10 m</td><td>All</td><td>Best outdoor; network provides assistance data via LPP.</td></tr>
+        <tr><td>OTDOA</td><td>Observed Time Difference of Arrival</td><td class="va">50–150 m</td><td>LTE, 5G</td><td>UE measures PRS from multiple cells; reports RSTD to E-SMLC/LMF.</td></tr>
+        <tr><td>UL-TDOA</td><td>Uplink Time Difference of Arrival</td><td class="va">50–100 m</td><td>5G NR</td><td>gNBs measure UE SRS arrival times. Network-side calculation only.</td></tr>
+        <tr><td>Multi-RTT</td><td>Multi-cell Round Trip Time</td><td class="vg">20–50 m</td><td>5G NR</td><td>UE+gNB Rx-Tx timing. Good indoor. 3GPP Rel-16.</td></tr>
+        <tr><td>E-CID</td><td>Enhanced Cell-ID</td><td class="vr">100–500 m</td><td>LTE, 5G</td><td>RSRP, TA, AoA for rough position estimate.</td></tr>
+        <tr><td>Barometric</td><td>UE barometric pressure sensor</td><td class="vg">1–3 m (z)</td><td>5G Rel-17</td><td>Floor-level z-axis. Maps pressure to floor using building models.</td></tr>
+      </table>
+
+      <h3 id="a-lte-flow">LTE E911 Signaling Flow</h3>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-step-num">01</div><div class="flow-step-body"><div class="fs-msg">Emergency Detect + Cell Selection</div><div class="fs-route">UE (local)</div><div class="fs-desc">UE matches digits against EF_ECC/SIB/hardcoded list. If not registered, initiates Emergency Attach on any available PLMN.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">02</div><div class="flow-step-body"><div class="fs-msg">Emergency PDN + QCI-1 Bearer (ARP=1)</div><div class="fs-route">MME → S-GW → P-GW</div><div class="fs-desc">Emergency PDN to IMS Emergency APN. QCI=1 GBR bearer with ARP Priority Level=1, preemption capability enabled — can displace any bearer for radio resources.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">03</div><div class="flow-step-body"><div class="fs-msg">SIP INVITE (urn:service:sos)</div><div class="fs-route">UE → P-CSCF → E-CSCF</div><div class="fs-desc">P-CSCF detects <code>urn:service:sos</code> (RFC 5031) + <code>Priority: emergency</code> header. Routes direct to E-CSCF, bypassing S-CSCF and IMS registration requirements.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">04</div><div class="flow-step-body"><div class="fs-msg">Location via LRF/E-SMLC (LPP)</div><div class="fs-route">E-CSCF → LRF → E-SMLC → UE</div><div class="fs-desc">E-CSCF triggers location via LRF. E-SMLC initiates LPP with UE. Best method used: A-GNSS preferred, OTDOA/E-CID fallback.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">05</div><div class="flow-step-body"><div class="fs-msg">PIDF-LO → E-CSCF → ESRP → PSAP</div><div class="fs-route">LRF → E-CSCF → ESRP → PSAP</div><div class="fs-desc">Location returned as PIDF-LO (RFC 4119). ESRP uses LoST (RFC 5222) to select the correct PSAP. INVITE includes <code>Geolocation</code> SIP header with PIDF-LO.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">06</div><div class="flow-step-body"><div class="fs-msg">PSAP Answers + RTP Voice</div><div class="fs-route">PSAP → UE (bidirectional RTP)</div><div class="fs-desc">CAD shows MSISDN and location. Voice via QCI-1 bearer. Location may be re-queried periodically for mobile callers.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">07</div><div class="flow-step-body"><div class="fs-msg">Post-Call Callback Window</div><div class="fs-route">Network (~5 min)</div><div class="fs-desc">Emergency registration retained ~5 min. PSAP can initiate SIP callback. Emergency PDN connection kept alive during this window.</div></div></div>
+      </div>
+
+      <h3 id="a-5g-e911">5G NR E911 Enhancements</h3>
+      <div class="two-col">
+        <div class="tcc"><div class="tcc-head" style="color:var(--blue)">4G LTE Emergency</div><div class="tcc-body"><strong>MME</strong> handles attach. <strong>E-SMLC</strong> positioning via SLs. <strong>GMLC</strong> location to E-CSCF. QCI-1 bearer S-GW/P-GW. Methods: OTDOA, A-GNSS, E-CID.</div></div>
+        <div class="tcc"><div class="tcc-head" style="color:var(--green)">5G NR Emergency</div><div class="tcc-body"><strong>AMF</strong> handles registration. <strong>LMF</strong> positioning via NLs. Location to E-CSCF via LMF. 5QI-1 PDU via SMF/UPF. Methods: UL-TDOA, Multi-RTT, NR-PRS, barometric.</div></div>
+      </div>
+      <div class="callout success">
+        <span class="ico">📡</span>
+        <div class="callout-content"><strong>5G NR Positioning (Rel-16+)</strong> UL-TDOA, DL-TDOA, Multi-RTT, and enhanced A-GNSS. Release 17 added barometric sensor integration for floor-level (z-axis). Release 18 introduced sidelink positioning for D2D emergency scenarios (TS 38.305).</div>
+      </div>
+
+      <div class="art-hr"></div>
+
+      <h2 id="a-ng911">Next Generation 911 (NG911)</h2>
+      <p>NG911 modernizes 911 from legacy TDM/PSTN to an <strong>IP-based ESInet</strong> using the <strong>NENA i3 architecture</strong> (NENA-STA-010). The ESInet carries SIP-based calls, text, images, and video alongside voice.</p>
+      <table class="spec-table">
+        <tr><th>Feature</th><th>Legacy E911</th><th>NG911 (i3)</th></tr>
+        <tr><td>Transport</td><td>PSTN / SS7 / TDM</td><td>IP / SIP over ESInet</td></tr>
+        <tr><td>Location delivery</td><td>ALI database lookup</td><td>PIDF-LO in SIP Geolocation header</td></tr>
+        <tr><td>Media types</td><td>Voice only</td><td>Voice, SMS, video, photos, data</td></tr>
+        <tr><td>PSAP routing</td><td>Selective Router</td><td>ESRP + ECRF (LoST protocol)</td></tr>
+        <tr><td>Callback</td><td>MSISDN to PSTN</td><td>SIP callback via Contact URI</td></tr>
+        <tr><td>Text-to-911</td><td>Not natively supported</td><td>Native SIP MESSAGE to PSAP</td></tr>
+      </table>
+
+      <div class="art-hr"></div>
+
+      <h2 id="a-cmas">Part 2 — CMAS / Wireless Emergency Alerts (WEA)</h2>
+      <h3>What is CMAS?</h3>
+      <p>The <strong>Commercial Mobile Alert System (CMAS)</strong> — branded as <strong>Wireless Emergency Alerts (WEA)</strong> — allows authorities to broadcast emergency alerts to all capable mobile devices in a geographic area. It operates over <strong>3GPP Cell Broadcast Service (CBS)</strong>: a one-way, network-to-device broadcast requiring no UE registration or per-device signaling.</p>
+
+      <h3>Alert Categories</h3>
+      <div class="ac-grid">
+        <div class="ac ac-pres"><div class="ac-type">Presidential</div><div class="ac-name">🔴 Presidential Alert</div><div class="ac-desc">Issued only by the President for national emergencies. Cannot be opted out. Only two national tests conducted (2018, 2019).</div><div class="ac-id">ID: 4370 (0x1112)</div></div>
+        <div class="ac ac-imm"><div class="ac-type">Imminent Threat</div><div class="ac-name">🔶 Extreme / Severe Threat</div><div class="ac-desc">Tornadoes, tsunamis, flash floods, severe storms, nuclear hazards. Extreme (immediate) and Severe (prepare now) sub-types. User opt-out allowed.</div><div class="ac-id">IDs: 4371–4372 (0x1113–0x1114)</div></div>
+        <div class="ac ac-ambe"><div class="ac-type">Child Abduction</div><div class="ac-name">🔵 AMBER Alert</div><div class="ac-desc">Confirmed child abductions meeting AMBER criteria. Contains vehicle/suspect info. Users may opt out. Distinctive audio tone.</div><div class="ac-id">ID: 4380 (0x111C)</div></div>
+        <div class="ac ac-test"><div class="ac-type">Test / Exercise</div><div class="ac-name">🟢 RMT / Operator Test</div><div class="ac-desc">Required Monthly Test (RMT) and Required Weekly Test (RWT) to verify end-to-end CMAS infrastructure. Users may opt out.</div><div class="ac-id">IDs: 4355–4356 (0x1103–0x1104)</div></div>
+      </div>
+
+      <h3 id="a-cmas-arch">CMAS Architecture & Flow</h3>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-step-num">01</div><div class="flow-step-body"><div class="fs-msg">Alert Originator Issues CAP Message</div><div class="fs-route">Federal / State / Local Authority → FEMA IPAWS-OPEN</div><div class="fs-desc">Authorized originators submit alerts using <strong>CAP</strong> (Common Alerting Protocol, OASIS CAP v1.2). CAP is an XML standard that includes message text, affected area polygon, severity, urgency, and expiry time.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">02</div><div class="flow-step-body"><div class="fs-msg">CAP → CMAM Translation at FAG</div><div class="fs-route">FEMA IPAWS → Federal Alert Gateway (FAG)</div><div class="fs-desc">FAG translates CAP into a <strong>CMAM (Commercial Mobile Alert Message)</strong> per ATIS J-STD-101. Validates originator authorization, deduplicates, and applies the target geographic polygon.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">03</div><div class="flow-step-body"><div class="fs-msg">CMAM Pushed to Carrier CMGs</div><div class="fs-route">FAG → Carrier CMAS Gateways (CMG)</div><div class="fs-desc">FAG simultaneously pushes to all carrier CMGs via HTTPS. Delivery must occur within <strong>10 minutes of originator submission</strong>. CMG is the carrier's interface between FEMA and their broadcast infrastructure.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">04</div><div class="flow-step-body"><div class="fs-msg">CBC Generates Cell Broadcast Message</div><div class="fs-route">CMG → CBC (Cell Broadcast Centre)</div><div class="fs-desc">CBC translates CMAM into a <strong>3GPP CBS message</strong>. Determines target cells (polygon-to-cell mapping using cell sector footprints). Generates the CBS broadcast schedule.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">05</div><div class="flow-step-body"><div class="fs-msg">Write-Replace Warning: CBC → eNB/gNB</div><div class="fs-route">CBC → MME/AMF → eNB/gNB (SBc-AP / NGAP)</div><div class="fs-desc">CBC sends <strong>Write-Replace Warning Request</strong> to MME (LTE via SBc) or AMF (5G via NGAP). MME/AMF forwards to target eNBs/gNBs with cell list, repetition period, and message content.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">06</div><div class="flow-step-body"><div class="fs-msg">Over-the-Air CBS Broadcast</div><div class="fs-route">eNB/gNB → All UEs (no registration needed)</div><div class="fs-desc">Broadcast on <strong>BCCH</strong> using <strong>SIB12 (LTE)</strong> or <strong>SIB6/7/8 (5G NR)</strong>. Repeated at specified interval until expiry. <strong>No UE-to-network signaling</strong> — UE passively receives.</div></div></div>
+        <div class="flow-step"><div class="flow-step-num">07</div><div class="flow-step-body"><div class="fs-msg">UE Decodes & Displays Alert</div><div class="fs-route">UE (no response to network)</div><div class="fs-desc">UE decodes CBS message, checks Message ID against CMAS class table, displays full-screen alert with WEA tone and vibration if class is enabled (based on user opt-out settings).</div></div></div>
+      </div>
+
+      <h3 id="a-cbs">CBS Message Format</h3>
+      <div class="msg-fmt">
+        <div class="mf-row"><span class="mf-f">Serial Number (2 bytes)</span><span class="mf-v a">0xXXXX</span><span class="mf-c">// Geographic scope + Message code + Update number</span></div>
+        <div class="mf-row"><span class="mf-f">Message Identifier (2 bytes)</span><span class="mf-v r">0x1112</span><span class="mf-c">// 4370 = Presidential Alert</span></div>
+        <div class="mf-row"><span class="mf-f">  "</span><span class="mf-v a">0x1113</span><span class="mf-c">// 4371 = Extreme Imminent Threat</span></div>
+        <div class="mf-row"><span class="mf-f">  "</span><span class="mf-v a">0x1114</span><span class="mf-c">// 4372 = Severe Imminent Threat</span></div>
+        <div class="mf-row"><span class="mf-f">  "</span><span class="mf-v b">0x111C</span><span class="mf-c">// 4380 = AMBER Alert</span></div>
+        <div class="mf-row"><span class="mf-f">  "</span><span class="mf-v g">0x1103</span><span class="mf-c">// 4355 = Required Monthly Test</span></div>
+        <hr class="mf-sep">
+        <div class="mf-row"><span class="mf-f">Data Coding Scheme (1 byte)</span><span class="mf-v g">0x11</span><span class="mf-c">// WEA: UTF-16 encoding indicator</span></div>
+        <div class="mf-row"><span class="mf-f">Page Parameter (1 byte)</span><span class="mf-v">0x11</span><span class="mf-c">// Total pages (hi nibble) + current page (lo nibble)</span></div>
+        <hr class="mf-sep">
+        <div class="mf-row"><span class="mf-f">Content (82 bytes/page)</span><span class="mf-v g">"TORNADO WARNING..."</span><span class="mf-c">// Alert text</span></div>
+        <div class="mf-row"><span class="mf-f">  WEA 2.0 max length</span><span class="mf-v a">90 chars</span><span class="mf-c">// Legacy character limit</span></div>
+        <div class="mf-row"><span class="mf-f">  WEA 3.0 max length</span><span class="mf-v g">1395 chars</span><span class="mf-c">// Multi-page CBS (FCC 2019 mandate)</span></div>
+      </div>
+
+      <h3 id="a-wea-geo">WEA Geo-Targeting Evolution</h3>
+      <table class="spec-table">
+        <tr><th>WEA Version</th><th>Geo-Targeting</th><th>Min Area</th><th>Method</th></tr>
+        <tr><td>WEA 1.0 (2012)</td><td>County-level broadcast</td><td class="vr">County (~1000+ mi²)</td><td>All cells in county FIPS code</td></tr>
+        <tr><td>WEA 2.0 (2016)</td><td>Cell-level broadcast</td><td class="va">~1 mi² (cell footprint)</td><td>CBC selects cells overlapping polygon</td></tr>
+        <tr><td>WEA 3.0 (2019)</td><td>Polygon-based precision</td><td class="vg">0.1 mi²</td><td>CAP polygon + cell sector geometry intersection</td></tr>
+      </table>
+
+      <h3 id="a-cmas-5g">CMAS in 5G NR</h3>
+      <table class="spec-table">
+        <tr><th>Feature</th><th>4G LTE</th><th>5G NR</th></tr>
+        <tr><td>CBS Channels</td><td>SIB11/12 (ETWS/CMAS)</td><td>SIB6/7/8 (ETWS primary/secondary/CMAS)</td></tr>
+        <tr><td>Core Interface</td><td>SBc-AP (CBC → MME)</td><td>NGAP + N50 (CBC → AMF / CBC → gNB direct)</td></tr>
+        <tr><td>ETWS Delivery</td><td>~4 seconds</td><td class="vg">~1 second (reduced latency)</td></tr>
+        <tr><td>Geo-Precision</td><td>Cell-level</td><td class="vg">Sub-cell / beam-level (Rel-17)</td></tr>
+        <tr><td>Max Length</td><td>1395 chars</td><td class="vg">Up to 9000 chars</td></tr>
+        <tr><td>Rich Content</td><td>Text only</td><td class="vg">Hyperlinks, URLs (Rel-17 WEA 4.0)</td></tr>
+      </table>
+
+      <div class="art-hr"></div>
+
+      <h2 id="a-timeline">Evolution Timeline</h2>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot" style="font-size:0.55rem">1968</div><div class="tl-body"><div class="tl-yr">1968</div><div class="tl-ttl">911 Established in the US</div><div class="tl-dsc">AT&T designates 911 as universal emergency number. First call in Haleyville, Alabama. No location data.</div></div></div>
+        <div class="tl-item"><div class="tl-dot" style="font-size:0.55rem">1996</div><div class="tl-body"><div class="tl-yr">1996</div><div class="tl-ttl">FCC E911 Phase I — Callback Number Mandate</div><div class="tl-dsc">FCC requires ANI (callback number) and cell tower ID for all 911 calls. Deployed by 1998.</div></div></div>
+        <div class="tl-item"><div class="tl-dot a" style="font-size:0.55rem">1999</div><div class="tl-body"><div class="tl-yr">1999</div><div class="tl-ttl">FCC E911 Phase II — GPS Location Mandate</div><div class="tl-dsc">50m lat/lon accuracy for 67% of calls. GPS handsets and network-based TDOA deployed. Full compliance 2002.</div></div></div>
+        <div class="tl-item"><div class="tl-dot g" style="font-size:0.55rem">2008</div><div class="tl-body"><div class="tl-yr">2008</div><div class="tl-ttl">WARN Act — CMAS Created</div><div class="tl-dsc">Warning, Alert, and Response Network Act signed. FCC/FEMA establish CMAS. J-STD-101 finalized. WEA 1.0 goes live 2012.</div></div></div>
+        <div class="tl-item"><div class="tl-dot b" style="font-size:0.55rem">2015</div><div class="tl-body"><div class="tl-yr">2015</div><div class="tl-ttl">FCC Indoor Location Accuracy Order</div><div class="tl-dsc">Mandates z-axis (floor-level) accuracy within 3 meters for 80% of indoor calls in Top 25 markets.</div></div></div>
+        <div class="tl-item"><div class="tl-dot a" style="font-size:0.55rem">2019</div><div class="tl-body"><div class="tl-yr">2019</div><div class="tl-ttl">WEA 3.0 — Polygon Geo-Targeting + Extended Text</div><div class="tl-dsc">FCC mandates 0.1 mi² geo-targeting, 1395-char alerts, Spanish language. 5G sub-cell targeting introduced.</div></div></div>
+        <div class="tl-item"><div class="tl-dot g" style="font-size:0.55rem">2023</div><div class="tl-body"><div class="tl-yr">2023–Present</div><div class="tl-ttl">NG911 Transition + WEA 4.0 Research</div><div class="tl-dsc">Ongoing NG911 (i3) deployment. FCC exploring WEA 4.0 with rich content and multilingual alerts. 3GPP Rel-18 5G sidelink E911.</div></div></div>
+      </div>
+
+      <div class="art-hr"></div>
+
+      <h2 id="a-specs">Key Standards Reference</h2>
+      <table class="spec-table">
+        <tr><th>Standard</th><th>Body</th><th>Topic</th></tr>
+        <tr><td>3GPP TS 23.167</td><td>3GPP SA2</td><td>IMS Emergency Sessions — architecture, requirements, procedures</td></tr>
+        <tr><td>3GPP TS 22.101</td><td>3GPP SA1</td><td>Service requirements including §10.3 Emergency Calls</td></tr>
+        <tr><td>3GPP TS 23.041</td><td>3GPP SA2</td><td>Technical realization of CBS; ETWS and CMAS mapping</td></tr>
+        <tr><td>3GPP TS 36.305</td><td>3GPP RAN2</td><td>LTE Positioning (LPP, OTDOA, E-CID, A-GNSS)</td></tr>
+        <tr><td>3GPP TS 38.305</td><td>3GPP RAN2</td><td>5G NR Positioning (UL-TDOA, Multi-RTT, NR-PRS)</td></tr>
+        <tr><td>3GPP TS 24.229</td><td>3GPP CT1</td><td>SIP/SDP for IMS; P-CSCF / E-CSCF behavior</td></tr>
+        <tr><td>3GPP TS 38.331</td><td>3GPP RAN2</td><td>5G NR RRC; SIB6/7/8 for ETWS/CMAS delivery</td></tr>
+        <tr><td>ATIS J-STD-101</td><td>ATIS</td><td>CMAS message format; FAG/CMG interface specification</td></tr>
+        <tr><td>NENA-STA-010</td><td>NENA</td><td>NG911 i3 Architecture; ESRP, ECRF, LIS definitions</td></tr>
+        <tr><td>RFC 5031</td><td>IETF</td><td>URI scheme for emergency: urn:service:sos</td></tr>
+        <tr><td>RFC 4119</td><td>IETF</td><td>PIDF-LO — Presence Information Data Format Location Object</td></tr>
+        <tr><td>RFC 5222</td><td>IETF</td><td>LoST — Location-to-Service Translation for PSAP routing</td></tr>
+        <tr><td>OASIS CAP 1.2</td><td>OASIS</td><td>Common Alerting Protocol — XML alert origination format</td></tr>
+        <tr><td>47 CFR Part 20</td><td>FCC</td><td>US regulations for mobile E911; §20.18 no-SIM mandate</td></tr>
+      </table>
+
+    </article>
+
+    <!-- SIDEBAR -->
+    <aside class="art-sidebar">
+      <div class="sb-box">
+        <div class="sb-head">Table of Contents</div>
+        <ul class="toc">
+          <li><a href="#a-overview">Overview</a></li>
+          <li><a href="#a-e911">Part 1 — E911</a></li>
+          <li class="sub"><a href="#a-location">Location Technologies</a></li>
+          <li class="sub"><a href="#a-lte-flow">LTE E911 Flow</a></li>
+          <li class="sub"><a href="#a-5g-e911">5G NR Enhancements</a></li>
+          <li><a href="#a-ng911">NG911 Architecture</a></li>
+          <li><a href="#a-cmas">Part 2 — CMAS / WEA</a></li>
+          <li class="sub"><a href="#a-cmas-arch">CMAS Architecture</a></li>
+          <li class="sub"><a href="#a-cbs">CBS Message Format</a></li>
+          <li class="sub"><a href="#a-wea-geo">WEA Geo-Targeting</a></li>
+          <li class="sub"><a href="#a-cmas-5g">CMAS in 5G NR</a></li>
+          <li><a href="#a-timeline">Evolution Timeline</a></li>
+          <li><a href="#a-specs">Standards Reference</a></li>
+        </ul>
+      </div>
+      <div class="sb-box">
+        <div class="sb-head">E911 Quick Reference</div>
+        <div class="sb-specs">
+          <div class="sb-row"><span class="sb-k">Bearer</span><span class="sb-v" style="color:var(--red)">QCI-1 / 5QI-1</span></div>
+          <div class="sb-row"><span class="sb-k">ARP Priority</span><span class="sb-v" style="color:var(--red)">1 (max)</span></div>
+          <div class="sb-row"><span class="sb-k">SIP URI</span><span class="sb-v" style="color:var(--teal)">urn:service:sos</span></div>
+          <div class="sb-row"><span class="sb-k">Location fmt</span><span class="sb-v">PIDF-LO</span></div>
+          <div class="sb-row"><span class="sb-k">H-accuracy</span><span class="sb-v" style="color:var(--green)">&lt; 50 m</span></div>
+          <div class="sb-row"><span class="sb-k">Z-accuracy</span><span class="sb-v" style="color:var(--green)">3 m (floor)</span></div>
+          <div class="sb-row"><span class="sb-k">Callback window</span><span class="sb-v">~5 min</span></div>
+          <div class="sb-row"><span class="sb-k">No-SIM identity</span><span class="sb-v" style="color:var(--amber)">IMEI / PEI</span></div>
+        </div>
+      </div>
+      <div class="sb-box">
+        <div class="sb-head">CMAS Quick Reference</div>
+        <div class="sb-specs">
+          <div class="sb-row"><span class="sb-k">Protocol</span><span class="sb-v">3GPP CBS</span></div>
+          <div class="sb-row"><span class="sb-k">LTE Channel</span><span class="sb-v">SIB11/12</span></div>
+          <div class="sb-row"><span class="sb-k">5G Channel</span><span class="sb-v">SIB6/7/8</span></div>
+          <div class="sb-row"><span class="sb-k">Core IF (4G)</span><span class="sb-v">SBc-AP</span></div>
+          <div class="sb-row"><span class="sb-k">Core IF (5G)</span><span class="sb-v">NGAP / N50</span></div>
+          <div class="sb-row"><span class="sb-k">WEA 3.0 geo</span><span class="sb-v" style="color:var(--green)">0.1 mi²</span></div>
+          <div class="sb-row"><span class="sb-k">Max length</span><span class="sb-v">1395 chars</span></div>
+          <div class="sb-row"><span class="sb-k">Delivery SLA</span><span class="sb-v" style="color:var(--amber)">&lt; 10 min</span></div>
+        </div>
+      </div>
+      <div class="sb-box">
+        <div class="sb-head">CMAS Message IDs</div>
+        <div class="sb-specs">
+          <div class="sb-row"><span class="sb-k">Presidential</span><span class="sb-v" style="color:var(--red)">0x1112</span></div>
+          <div class="sb-row"><span class="sb-k">Extreme Threat</span><span class="sb-v" style="color:var(--amber)">0x1113</span></div>
+          <div class="sb-row"><span class="sb-k">Severe Threat</span><span class="sb-v" style="color:var(--amber)">0x1114</span></div>
+          <div class="sb-row"><span class="sb-k">AMBER Alert</span><span class="sb-v" style="color:var(--blue)">0x111C</span></div>
+          <div class="sb-row"><span class="sb-k">Monthly Test</span><span class="sb-v" style="color:var(--green)">0x1103</span></div>
+        </div>
+      </div>
+      <div class="sb-box" style="border-color:var(--amber)40">
+        <div class="sb-head" style="color:var(--amber)">📊 View Call Flows</div>
+        <div class="sb-specs" style="padding:0.8rem">
+          <p style="font-size:0.75rem;color:var(--dk-text2);margin-bottom:0.7rem">See interactive signal flow diagrams for all E911 procedures.</p>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:0.78rem" onclick="navTo('callflows','e911')">Open E911 Diagrams →</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="art-footer-inner">
+      <h3>Related Topics</h3>
+      <div class="related-grid">
+        <div class="rc" onclick="navTo('callflows','lte')"><div class="rc-meta"><span class="chip chip-4g">4G LTE</span></div><div class="rc-title">LTE Attach Signal Flow</div><div class="rc-desc">EPS-AKA, MME, HSS, default bearer — interactive SVG diagram</div></div>
+        <div class="rc" onclick="navTo('callflows','nr')"><div class="rc-meta"><span class="chip chip-5g">5G NR</span></div><div class="rc-title">5G NR Registration Flow</div><div class="rc-desc">AMF, AUSF, UDM, 5G-AKA, SUCI/SUPI — 22 signaling steps</div></div>
+        <div class="rc" onclick="navTo('callflows','volte')"><div class="rc-meta"><span class="chip chip-ims">IMS</span></div><div class="rc-title">VoLTE / IMS Call Setup</div><div class="rc-desc">IMS registration + MO call — QCI-1 bearer, SIP INVITE flow</div></div>
+        <div class="rc" onclick="navTo('callflows','5e911')"><div class="rc-meta"><span class="chip chip-5g">5G NR</span><span class="chip chip-e911">E911</span></div><div class="rc-title">5G NR E911 Signal Flow</div><div class="rc-desc">AMF, SMF, LMF, NR positioning, 5QI-1 PDU session — 16 steps</div></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+// ─── PAGE ROUTING ───────────────────────────────────────
+let currentPage = 'home';
+
+function navTo(page, anchor) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Update nav active state
+  document.querySelectorAll('.topbar-nav button, .topbar-nav a').forEach(b => b.classList.remove('active'));
+
+  const pageEl = document.getElementById('page-' + page);
+  if (!pageEl) return;
+  pageEl.classList.add('active');
+  currentPage = page;
+
+  const navBtn = document.getElementById('nav-' + page);
+  if (navBtn) navBtn.classList.add('active');
+
+  // If switching to call flows with a specific tab
+  if (page === 'callflows' && anchor) {
+    cfShowById(anchor);
+  }
+
+  // If switching to article with a specific anchor
+  if (page === 'article' && anchor) {
+    setTimeout(() => {
+      const el = document.getElementById('a-' + anchor);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+
+  // Scroll to top of new page
+  window.scrollTo({ top: 0, behavior: 'instant' });
+
+  // Init diagrams lazily
+  if (page === 'callflows' && !window._cfBuilt) {
+    buildAllDiagrams();
+    window._cfBuilt = true;
+  }
+}
+
+// ─── CALL FLOW TAB SWITCHING ────────────────────────────
+function cfShow(id, btn) {
+  document.querySelectorAll('.cf-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#cf-nav button').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('cfp-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function cfShowById(id) {
+  const btns = document.querySelectorAll('#cf-nav button');
+  let found = null;
+  btns.forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) {
+      found = b;
+    }
+  });
+  if (found) cfShow(id, found);
+  else {
+    document.querySelectorAll('.cf-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#cf-nav button').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('cfp-' + id);
+    if (panel) panel.classList.add('active');
+  }
+}
+
+// ─── SVG SEQUENCE DIAGRAM ENGINE ────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(str, attrs, parent) {
+  const t = el('text', attrs, parent);
+  t.textContent = str; return t;
+}
+function wrapStr(s, max) {
+  const words = s.split(' '), lines = []; let cur = '';
+  for (const w of words) {
+    if ((cur+' '+w).trim().length <= max) cur = (cur+' '+w).trim();
+    else { if(cur) lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function buildSVG(containerId, nodes, steps, accent) {
+  const cont = document.getElementById(containerId);
+  if (!cont || cont.children.length > 0) return;
+
+  const LPAD=28, RPAD=10, TOP=16, NODE_W=82, NODE_H=38, STEP_H=58, BOTTOM=24;
+  const N = nodes.length;
+  const minW = N*(NODE_W+36)+LPAD+RPAD+20;
+  const totalW = Math.max(minW, 760);
+  const usable = totalW-LPAD-RPAD;
+  const colX = nodes.map((_,i) => N===1 ? totalW/2 : LPAD+(usable/(N-1))*i);
+  const headerH = TOP+NODE_H+18;
+  const totalH = headerH+steps.length*STEP_H+BOTTOM;
+
+  const svg = el('svg',{width:totalW,height:totalH,viewBox:`0 0 ${totalW} ${totalH}`,style:'font-family:"IBM Plex Mono",monospace'},cont);
+  const defs = el('defs',{},svg);
+  const mkArrow=(id,color)=>{const m=el('marker',{id,markerWidth:'9',markerHeight:'7',refX:'8',refY:'3.5',orient:'auto'},defs);el('polygon',{points:'0 0, 9 3.5, 0 7',fill:color},m);};
+  mkArrow(`ah-${containerId}`,accent);
+  mkArrow(`ah-gray-${containerId}`,'#94a3b8');
+
+  el('rect',{width:totalW,height:totalH,fill:'#ffffff'},svg);
+
+  // Legend
+  const lY=TOP+NODE_H+5;
+  el('line',{x1:totalW-160,y1:lY,x2:totalW-140,y2:lY,stroke:accent,'stroke-width':'2','marker-end':`url(#ah-${containerId})`},svg);
+  txt('Request / Command',{x:totalW-135,y:lY+4,'font-size':'8.5',fill:'#94a3b8','font-family':"'IBM Plex Sans',sans-serif"},svg);
+  const lY2=lY+13;
+  el('line',{x1:totalW-160,y1:lY2,x2:totalW-140,y2:lY2,stroke:'#94a3b8','stroke-width':'1.5','stroke-dasharray':'4,3','marker-end':`url(#ah-gray-${containerId})`},svg);
+  txt('Response / Confirm',{x:totalW-135,y:lY2+4,'font-size':'8.5',fill:'#94a3b8','font-family':"'IBM Plex Sans',sans-serif"},svg);
+
+  // Node boxes
+  nodes.forEach((label,i)=>{
+    const cx=colX[i], lines=label.split('\n');
+    el('rect',{x:cx-NODE_W/2+2,y:TOP+2,width:NODE_W,height:NODE_H,rx:'6',fill:accent,opacity:'0.08'},svg);
+    el('rect',{x:cx-NODE_W/2,y:TOP,width:NODE_W,height:NODE_H,rx:'6',fill:'#f8faff',stroke:accent,'stroke-width':'1.8'},svg);
+    const lh=13, totalTH=lines.length*lh;
+    lines.forEach((line,li)=>{txt(line,{x:cx,y:TOP+(NODE_H-totalTH)/2+lh*(li+1)-1,'text-anchor':'middle','font-size':'9.5','font-weight':'700',fill:accent},svg);});
+  });
+
+  // Lifelines
+  nodes.forEach((_,i)=>{el('line',{x1:colX[i],y1:TOP+NODE_H,x2:colX[i],y2:totalH-BOTTOM,stroke:'#dde1e8','stroke-width':'1.5','stroke-dasharray':'5,4'},svg);});
+
+  // Steps
+  steps.forEach((step,si)=>{
+    const rowY=headerH+si*STEP_H, midY=rowY+STEP_H/2;
+    if(si%2===0) el('rect',{x:0,y:rowY,width:totalW,height:STEP_H,fill:'#f8fafc',opacity:'0.7'},svg);
+    el('line',{x1:0,y1:rowY,x2:totalW,y2:rowY,stroke:'#eef0f4','stroke-width':'1'},svg);
+    txt(String(si+1).padStart(2,'0'),{x:10,y:midY+4,'font-size':'9','font-weight':'700',fill:'#cbd5e1','text-anchor':'middle'},svg);
+
+    const fx=colX[step.from], tx=colX[step.to], goRight=tx>fx, isDash=step.dashed||false;
+    const clr=isDash?'#94a3b8':accent, markId=isDash?`ah-gray-${containerId}`:`ah-${containerId}`;
+
+    el('rect',{x:fx-5,y:midY-12,width:10,height:24,rx:'2',fill:isDash?'#e2e8f0':accent,opacity:isDash?'0.4':'0.2'},svg);
+
+    const x1=goRight?fx+6:fx-6, x2=goRight?tx-6:tx+6;
+    el('line',{x1,y1:midY,x2,y2:midY,stroke:clr,'stroke-width':isDash?'1.5':'2',...(isDash?{'stroke-dasharray':'5,3'}:{}),'marker-end':`url(#${markId})`},svg);
+
+    const mid=(x1+x2)/2, msgLines=(step.msg||'').split('\n'), availW=Math.abs(x2-x1);
+    const pillW=Math.min(availW-8,220), lineH2=13, pillH=msgLines.length*lineH2+6, pillY=midY-pillH-4;
+    el('rect',{x:mid-pillW/2,y:pillY,width:pillW,height:pillH,rx:'3',fill:isDash?'#f1f5f9':'#fffbeb',stroke:isDash?'#cbd5e1':'#fcd34d','stroke-width':'1'},svg);
+    msgLines.forEach((line,li)=>{txt(line,{x:mid,y:pillY+10+li*lineH2,'text-anchor':'middle','font-size':'9','font-weight':isDash?'400':'600',fill:isDash?'#64748b':'#1a1e2e'},svg);});
+
+    if(step.desc){
+      const descLines=wrapStr(step.desc,55);
+      descLines.slice(0,2).forEach((dl,dli)=>{txt(dl+(dli===1&&descLines.length>2?'…':''),{x:mid,y:midY+11+dli*10,'text-anchor':'middle','font-size':'8',fill:'#9ca3af','font-family':"'IBM Plex Sans',sans-serif"},svg);});
+    }
+  });
+}
+
+// ─── ALL DIAGRAM DATA ────────────────────────────────────
+function buildAllDiagrams() {
+  buildSVG('d-lte',['UE','eNB','MME','HSS','S-GW','P-GW'],[
+    {from:0,to:2,msg:'Attach Request\n(IMSI/GUTI + UE caps)',desc:'NAS over RRC: UE capabilities, PDN request, security algorithms supported'},
+    {from:2,to:0,msg:'Identity Request',dashed:true,desc:'If IMSI unknown (new UE or GUTI unrecognised by MME)'},
+    {from:0,to:2,msg:'Identity Response (IMSI)',desc:'UE provides permanent identity so MME can query HSS'},
+    {from:2,to:3,msg:'Auth Info Request (S6a)\n(IMSI)',desc:'Diameter S6a: MME requests EPS Authentication Vectors from HSS'},
+    {from:3,to:2,msg:'Auth Info Answer\n(RAND, AUTN, XRES, KASME)',dashed:true,desc:'HSS returns auth vector; KASME is root key for NAS/AS security'},
+    {from:2,to:0,msg:'Auth Request (RAND, AUTN)',desc:'MME challenges UE; AUTN allows UE to verify the network'},
+    {from:0,to:2,msg:'Auth Response (RES)',desc:'USIM computes RES from RAND+K; MME verifies RES = XRES'},
+    {from:2,to:0,msg:'Security Mode Command\n(NAS integrity + cipher)',desc:'NAS security activated; all subsequent NAS messages protected'},
+    {from:0,to:2,msg:'Security Mode Complete',dashed:true,desc:'NAS security now active between UE and MME'},
+    {from:2,to:3,msg:'Update Location Request\n(IMSI, MME identity)',desc:'MME registers as serving MME for this subscriber with HSS'},
+    {from:3,to:2,msg:'Update Location Answer\n(Subscription data)',dashed:true,desc:'HSS returns QoS profile, APN config, allowed services, UE-AMBR'},
+    {from:2,to:4,msg:'Create Session Request\n(IMSI, APN, QoS)',desc:'MME requests default bearer from S-GW; S-GW forwards to P-GW'},
+    {from:4,to:5,msg:'Create Session Request\n→ P-GW',desc:'S-GW forwards with GTP-C to P-GW for IP address assignment'},
+    {from:5,to:4,msg:'Create Session Response\n(UE IP, P-GW TEID)',dashed:true,desc:'P-GW assigns UE IP, creates default bearer context (QCI-9)'},
+    {from:4,to:2,msg:'Create Session Response\n(S-GW TEID, UE IP)',dashed:true,desc:'S-GW returns its tunnel endpoint IDs to MME'},
+    {from:2,to:1,msg:'Initial Context Setup Req\n(KeNB, E-RAB, Attach Accept)',desc:'MME sends AS security context + embedded Attach Accept NAS to eNB'},
+    {from:1,to:0,msg:'RRC Connection Reconfig\n(DRB setup, AS security)',desc:'eNB sets up Data Radio Bearer; activates RRC integrity + ciphering'},
+    {from:0,to:1,msg:'RRC Reconfig Complete',dashed:true,desc:'UE confirms radio bearer and AS security activation'},
+    {from:1,to:2,msg:'Initial Context Setup Resp',dashed:true,desc:'eNB confirms bearer setup and reports its TEID to MME'},
+    {from:0,to:2,msg:'Attach Complete\n(Default bearer active)',desc:'UE confirms attach done; MME sends Modify Bearer to update eNB TEID in S-GW'},
+  ],'#1a5fa8');
+
+  buildSVG('d-nr',['UE','gNB','AMF','AUSF','UDM','PCF'],[
+    {from:0,to:1,msg:'Registration Request\n(SUCI, 5GMM cap, NSSAI)',desc:'SUCI conceals SUPI using home network ECIES public key'},
+    {from:1,to:2,msg:'N2: Registration Request\n(NAS forward to AMF)',desc:'gNB selects AMF based on NSSAI; forwards NAS over N2 (NGAP)'},
+    {from:2,to:3,msg:'Nausf_UEAuth\nAuthenticate Request (SUCI)',desc:'AMF invokes AUSF authentication service with SUCI'},
+    {from:3,to:4,msg:'Nudm_UEAuth Get\n(SUCI → SUPI + 5G HE AV)',desc:'AUSF calls UDM to de-conceal SUCI and return 5G AV'},
+    {from:4,to:3,msg:'5G HE AV\n(RAND,AUTN,XRES*,KAUSF)',dashed:true,desc:'UDM derives SUPI, generates 5G-AKA auth vector'},
+    {from:3,to:2,msg:'5G SE AV\n(RAND, AUTN, HXRES*)',dashed:true,desc:'AUSF converts to SE AV for AMF; retains XRES*'},
+    {from:2,to:0,msg:'Auth Request (RAND, AUTN)',desc:'AMF challenges UE; UE verifies AUTN'},
+    {from:0,to:2,msg:'Auth Response (RES*)',desc:'UE derives RES*; AMF computes HRES*, sends to AUSF'},
+    {from:2,to:3,msg:'Nausf: Confirm (HRES*)',desc:'AUSF verifies HRES* vs XRES* — prevents false base stations'},
+    {from:3,to:2,msg:'Auth Confirmed (KAUSF)',dashed:true,desc:'Mutual auth complete; KAMF derived from KAUSF'},
+    {from:2,to:0,msg:'Security Mode Command\n(5G-NAS security)',desc:'AMF selects NAS integrity + ciphering algorithms'},
+    {from:0,to:2,msg:'Security Mode Complete',dashed:true,desc:'NAS security active; IMEISV reported if requested'},
+    {from:2,to:4,msg:'Nudm_SDM_Get\n(Subscription data)',desc:'AMF fetches allowed NSSAI, DNN list, mobility restrictions'},
+    {from:4,to:2,msg:'Subscription Data\n(NSSAI, DNN, policies)',dashed:true,desc:'UDM returns subscriber profile for this SUPI'},
+    {from:2,to:4,msg:'Nudm_UECM\nRegistration (AMF)',desc:'AMF registers as serving AMF; old AMF deregistered'},
+    {from:2,to:5,msg:'Npcf_AMPolicy\nControl_Create',desc:'AMF creates AM policy association with PCF'},
+    {from:5,to:2,msg:'AM Policies\n(slice, area restrictions)',dashed:true,desc:'PCF returns network slice selection and service area policies'},
+    {from:2,to:1,msg:'N2: Initial Context Setup\n(KgNB, NSSAI)',desc:'AMF derives KgNB from KAMF; sends AS security context to gNB'},
+    {from:1,to:0,msg:'RRC Security Mode Cmd\n+ RRC Reconfiguration',desc:'gNB activates AS security; sets up SRB2 and DRB'},
+    {from:0,to:1,msg:'RRC Reconfig Complete',dashed:true,desc:'UE confirms AS security and radio bearer setup'},
+    {from:2,to:0,msg:'Registration Accept\n(5G-GUTI, NSSAI, T3512)',dashed:true,desc:'Allowed slices, TAI list, mobility timer, LADN info'},
+    {from:0,to:2,msg:'Registration Complete',desc:'Registration done; UE may now request PDU Session'},
+  ],'#0f8a5f');
+
+  buildSVG('d-imsreg',['UE','P-CSCF','I-CSCF','S-CSCF','HSS'],[
+    {from:0,to:1,msg:'SIP REGISTER\n(IMPU, IMPI)',desc:'P-CSCF address from LTE attach PCO; first SIP hop'},
+    {from:1,to:2,msg:'SIP REGISTER (forward)',desc:'P-CSCF adds Via, Route headers; forwards to I-CSCF'},
+    {from:2,to:4,msg:'Cx: UAR\n(User Auth Request)',desc:'I-CSCF queries HSS to select S-CSCF for this subscriber'},
+    {from:4,to:2,msg:'Cx: UAA (S-CSCF name)',dashed:true,desc:'HSS assigns and returns S-CSCF based on capabilities'},
+    {from:2,to:3,msg:'SIP REGISTER\n(to assigned S-CSCF)',desc:'I-CSCF routes REGISTER to the assigned S-CSCF'},
+    {from:3,to:4,msg:'Cx: MAR\n(Multimedia Auth Request)',desc:'S-CSCF requests IMS-AKA authentication vectors from HSS'},
+    {from:4,to:3,msg:'Cx: MAA\n(RAND, AUTN, IK, CK)',dashed:true,desc:'HSS returns IMS authentication vectors'},
+    {from:3,to:0,msg:'401 Unauthorized\n(IMS-AKA: RAND+AUTN)',desc:'WWW-Authenticate: RAND + AUTN for UE verification'},
+    {from:0,to:3,msg:'SIP REGISTER\n(Authorization: RES)',desc:'UE re-registers with RES; IPSec SA established with P-CSCF'},
+    {from:3,to:4,msg:'Cx: SAR\n(Server Assignment)',desc:'S-CSCF registers as serving CSCF; downloads subscriber profile'},
+    {from:4,to:3,msg:'Cx: SAA (iFC, service profile)',dashed:true,desc:'HSS confirms; returns initial Filter Criteria'},
+    {from:3,to:0,msg:'200 OK (IMS Registered ✓)',dashed:true,desc:'Registration valid ~3600s; must re-REGISTER before expiry'},
+  ],'#7c3aed');
+
+  buildSVG('d-volte',['UE-A','P-CSCF\n(UE-A)','S-CSCF\n(Home)','PCRF','S-CSCF\n(UE-B)','UE-B'],[
+    {from:0,to:1,msg:'SIP INVITE\n(SDP offer, AMR-WB)',desc:'SDP contains codec list, ICE candidates, RTCP params'},
+    {from:1,to:3,msg:'AAR (Rx interface)\n(SDP → PCRF)',desc:'P-CSCF requests QoS authorization for voice bearer'},
+    {from:3,to:1,msg:'AAA: Approved\n(QCI-1 GBR rules)',dashed:true,desc:'PCRF authorizes 23.4 kbps GBR; triggers RAR to P-GW'},
+    {from:1,to:2,msg:'SIP INVITE (forward)',desc:'P-CSCF adds Route, Via; S-CSCF triggers iFC'},
+    {from:2,to:4,msg:'SIP INVITE\n(route to terminating)',desc:'S-CSCF queries I-CSCF; routes to UE-B home S-CSCF'},
+    {from:4,to:5,msg:'SIP INVITE (to UE-B)',desc:'UE-B P-CSCF forwards; QCI-1 bearer set up on UE-B side'},
+    {from:5,to:0,msg:'100 Trying / 180 Ringing',dashed:true,desc:'Provisional responses propagated back; early media possible'},
+    {from:5,to:0,msg:'200 OK\n(SDP answer, codec)',dashed:true,desc:'UE-B accepts; SDP answer confirms codec + RTP port'},
+    {from:0,to:5,msg:'SIP ACK',desc:'Three-way handshake complete; SIP dialog established'},
+    {from:0,to:5,msg:'RTP Voice (AMR-WB, QCI-1)',desc:'HD Voice on dedicated QCI-1 GBR bearer; RTCP for quality'},
+    {from:5,to:4,msg:'SIP BYE',desc:'Terminating party ends; BYE routed through IMS'},
+    {from:0,to:1,msg:'200 OK (call released)',dashed:true,desc:'PCRF releases QCI-1 GBR bearer; reverts to QCI-9 only'},
+  ],'#7c3aed');
+
+  buildSVG('d-e911',['UE + SIM','eNB','MME','E-CSCF\nP-CSCF','LRF\nGMLC','PSAP'],[
+    {from:0,to:1,msg:'RRC: Emergency\nEstablishment Cause',desc:'User dials 911; UE detects from EF_ECC or hardcoded list'},
+    {from:0,to:2,msg:'Emergency Attach Req\n(IMSI, emergency)',desc:'If not attached; MME skips subscription barring checks'},
+    {from:2,to:0,msg:'Auth (EPS-AKA) + NAS\nSecurity Cmd',dashed:true,desc:'Auth attempted if HSS reachable; NAS security activated'},
+    {from:2,to:1,msg:'Create Emergency Bearer\nQCI-1, ARP=1',desc:'Highest priority bearer; preemption capability enabled'},
+    {from:0,to:3,msg:'SIP INVITE\nurn:service:sos',desc:'"Priority: emergency"; P-CSCF routes direct to E-CSCF'},
+    {from:3,to:4,msg:'Location Request\n(LPP Positioning)',desc:'E-CSCF requests UE location via GMLC/LRF'},
+    {from:4,to:2,msg:'LPP: OTDOA / A-GNSS\nMeasurement',desc:'Network triggers GPS or timing measurements'},
+    {from:2,to:4,msg:'UE Location\n(lat/lon, accuracy)',dashed:true,desc:'GPS <10m, E-CID ~50–100m, Cell-ID ~100–500m'},
+    {from:4,to:3,msg:'PIDF-LO\n(coordinates + civic)',dashed:true,desc:'Location Object per RFC 4119; includes uncertainty ellipse'},
+    {from:3,to:5,msg:'SIP INVITE\n(PIDF-LO + MSISDN)',desc:'E-CSCF → ESRP selects PSAP via ESInet using location'},
+    {from:5,to:0,msg:'200 OK\n(Dispatcher answers)',dashed:true,desc:'PSAP CAD shows MSISDN + location'},
+    {from:0,to:5,msg:'RTP Voice Media\n(active call)',desc:'Periodic location updates pushed to PSAP during call'},
+    {from:5,to:0,msg:'SIP BYE (call ends)',dashed:true,desc:'Emergency reg retained ~5 min; PSAP callback possible'},
+  ],'#c0392b');
+
+  buildSVG('d-e911n',['UE (no SIM)','Any eNB','MME','E-CSCF','LRF','PSAP'],[
+    {from:0,to:1,msg:'RRC: Emergency\n(any PLMN accepted)',desc:'PLMN restrictions lifted; UE camps on any available cell'},
+    {from:0,to:2,msg:'Emergency Attach Req\n(IMEI only — no IMSI)',desc:'Attach Type = EPS Emergency; no IMSI → no HSS lookup'},
+    {from:2,to:0,msg:'Auth SKIPPED\nNAS: NULL (EEA0/EIA0)',dashed:true,desc:'No authentication credentials; NULL security applied'},
+    {from:2,to:1,msg:'Emergency Bearer\n(Emergency APN only)',desc:'IMS Emergency APN only; no internet access'},
+    {from:1,to:0,msg:'IP Assigned\n(emergency IMS only)',dashed:true,desc:'UE gets IP; restricted to E-CSCF/PSAP path only'},
+    {from:0,to:3,msg:'SIP INVITE\nFrom: anonymous',desc:'No IMS registration; direct emergency INVITE to E-CSCF'},
+    {from:3,to:4,msg:'Location Request\n(best effort)',desc:'No subscriber data; relies on GPS or Cell-ID only'},
+    {from:4,to:3,msg:'PIDF-LO\n(GPS or Cell-ID)',dashed:true,desc:'GPS critical — only identification available for dispatch'},
+    {from:3,to:5,msg:'SIP INVITE\n(anonymous + location)',desc:'PSAP sees "Unknown Number" — location only dispatch info'},
+    {from:5,to:0,msg:'200 OK\n(Dispatcher answers)',dashed:true,desc:'No MSISDN shown; cannot initiate callback'},
+    {from:0,to:5,msg:'RTP Voice (active call)',desc:'If call drops, UE must redial 911 — no callback possible'},
+    {from:5,to:0,msg:'SIP BYE (call ends)',dashed:true,desc:'Emergency bearer torn down; no callback mechanism'},
+  ],'#d4680a');
+
+  buildSVG('d-5e911',['UE + USIM','gNB','AMF','SMF\nUPF','LMF','E-CSCF\nP-CSCF','PSAP'],[
+    {from:0,to:1,msg:'RRC: Emergency\nEstablishment Cause',desc:'User dials 911; UE detects from EF_ECC (USIM) or hardcoded list'},
+    {from:1,to:2,msg:'N2: Registration Req\n(Emergency, SUCI/5G-GUTI)',desc:'gNB forwards NAS Registration Type = Emergency to AMF'},
+    {from:2,to:0,msg:'5G-AKA Auth\n+ NAS Security Cmd',dashed:true,desc:'AMF invokes AUSF→UDM; NAS security (5G-NIA/5G-NEA) activated'},
+    {from:2,to:3,msg:'Nsmf: PDU Session Est\n(Emergency DNN, 5QI-1)',desc:'AMF requests SMF to create emergency PDU session; UPF N4 rules installed'},
+    {from:3,to:2,msg:'Emergency PDU Session\nCreated (UE IP)',dashed:true,desc:'UPF activated; 5QI-1 GBR QoS (ARP=1, preemptive)'},
+    {from:2,to:1,msg:'N2: PDU Session Res\n(QoS, DRB setup)',desc:'AMF instructs gNB to set up NR DRB with 5QI-1 QoS'},
+    {from:1,to:0,msg:'RRC Reconfig\n(DRB + AS security)',desc:'gNB sets up DRB; KgNB activates RRC ciphering'},
+    {from:0,to:5,msg:'SIP INVITE\nurn:service:sos',desc:'"Priority: emergency"; P-CSCF routes direct to E-CSCF'},
+    {from:5,to:4,msg:'Namf_Location Req\n(LPP / NR Positioning)',desc:'E-CSCF requests location via LMF'},
+    {from:4,to:2,msg:'NR Positioning\nUL-TDOA / Multi-RTT',desc:'LMF triggers NR measurements; gNB+UE take RTT measurements'},
+    {from:2,to:4,msg:'UE Position\n(NR accuracy: <3m)',dashed:true,desc:'NR positioning: sub-3m; floor-level accuracy via barometric'},
+    {from:4,to:5,msg:'PIDF-LO\n(NR location + civic)',dashed:true,desc:'LMF returns location; E-CSCF embeds in Geolocation header'},
+    {from:5,to:6,msg:'SIP INVITE\n(PIDF-LO + MSISDN)',desc:'E-CSCF → ESRP routes to PSAP via ESInet'},
+    {from:6,to:0,msg:'200 OK\n(Dispatcher answers)',dashed:true,desc:'PSAP CAD shows MSISDN + NR high-accuracy location'},
+    {from:0,to:6,msg:'RTP Voice\n(5QI-1 PDU Session)',desc:'Voice over 5QI-1 GBR; RTCP quality reports; location updates'},
+    {from:6,to:0,msg:'SIP BYE (call ends)',dashed:true,desc:'Emergency PDU session retained ~5 min; PSAP callback possible'},
+  ],'#0e6f6f');
+
+  buildSVG('d-5e911n',['UE (no USIM)','Any gNB','AMF','SMF\nUPF','LMF','E-CSCF','PSAP'],[
+    {from:0,to:1,msg:'RRC: Emergency\n(any PLMN / SNPN)',desc:'PLMN/SNPN restrictions lifted; any available NR cell'},
+    {from:0,to:2,msg:'Registration Req\n(Emergency, PEI only)',desc:'Registration Type = Emergency; Identity = PEI; no SUPI/SUCI'},
+    {from:2,to:0,msg:'Auth SKIPPED\n5G-NIA0 / 5G-NEA0',dashed:true,desc:'No SUPI → no UDM/AUSF; AMF applies NULL NAS security'},
+    {from:2,to:3,msg:'Nsmf: Emergency PDU\n(Emergency DNN, PEI)',desc:'AMF requests emergency PDU for PEI-only UE; SMF emergency policy'},
+    {from:3,to:2,msg:'Emergency PDU Created\n(IP, emerg DNN only)',dashed:true,desc:'UPF restricts traffic to E-CSCF/PSAP only'},
+    {from:2,to:1,msg:'N2: DRB Setup\n(5QI-1, ARP=1)',desc:'AMF instructs gNB to set up NR DRB; highest priority'},
+    {from:1,to:0,msg:'IP Assigned\n(emergency IMS only)',dashed:true,desc:'SIP to E-CSCF only — strictly scoped to emergency'},
+    {from:0,to:5,msg:'SIP INVITE\nFrom: anonymous',desc:'No IMS registration; direct emergency INVITE; anonymous From'},
+    {from:5,to:4,msg:'Location Request\n(best effort, PEI)',desc:'LMF attempts positioning without subscription data'},
+    {from:4,to:2,msg:'NR Positioning\n(UL-TDOA / GPS)',desc:'NR cell measurements; UE reports A-GNSS if available'},
+    {from:2,to:4,msg:'UE Location\n(GPS / NR best effort)',dashed:true,desc:'GPS critical; NR cell-ID otherwise (~100m)'},
+    {from:4,to:5,msg:'PIDF-LO (best effort)',dashed:true,desc:'Location returned even without MSISDN'},
+    {from:5,to:6,msg:'SIP INVITE\n(anonymous + location)',desc:'PSAP: no phone number — location is only dispatch info'},
+    {from:6,to:0,msg:'200 OK (Dispatcher answers)',dashed:true,desc:'No MSISDN; dispatcher cannot initiate callback'},
+    {from:0,to:6,msg:'RTP Voice (active call)',desc:'If call drops, UE must redial — no callback possible'},
+    {from:6,to:0,msg:'SIP BYE (call ends)',dashed:true,desc:'Emergency PDU torn down; no callback mechanism'},
+  ],'#6b3fa0');
+}
+</script>
+</body>
+</html>
