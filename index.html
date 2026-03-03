@@ -1191,6 +1191,65 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--dk-bg); color
         <div class="tl-item"><div class="tl-dot g" style="font-size:0.55rem">2023</div><div class="tl-body"><div class="tl-yr">2023–Present</div><div class="tl-ttl">NG911 Transition + WEA 4.0 Research</div><div class="tl-dsc">Ongoing NG911 (i3) deployment. FCC exploring WEA 4.0 with rich content and multilingual alerts. 3GPP Rel-18 5G sidelink E911.</div></div></div>
       </div>
 
+      <!-- ========== NEW SECTION: E911 LOG ANALYSIS ========== -->
+      <h2 id="a-log-analysis">Analyzing E911 Logs from the Device</h2>
+      <p>When debugging E911 call failures or validating correct emergency behavior, device‑side logs are invaluable. They reveal exactly how the UE detects an emergency number, which radio and core procedures it triggers, and whether location information is properly retrieved. Below we cover common log sources, key events to look for, and sample log snippets.</p>
+
+      <h3>Log Sources</h3>
+      <ul style="color:var(--dk-text2); margin-left:1.2rem; margin-bottom:1rem;">
+        <li><strong>Android Bugreport</strong> – Contains <code>logcat</code> (IMS stack, RIL, telephony), kernel logs, and event logs. <code>adb bugreport</code> captures everything.</li>
+        <li><strong>QXDM / QCAT (Qualcomm devices)</strong> – Low‑level modem logs showing NAS, RRC, and SIP messages between UE and network.</li>
+        <li><strong>Wireshark + tethering</strong> – When the UE is used as a modem, a tethered PC can capture IP traffic (SIP/RTP) for analysis.</li>
+        <li><strong>iPhone Field Test / sysdiagnose</strong> – Apple’s logs contain similar NAS/IMS information (accessible via privacy logs).</li>
+        <li><strong>Vendor diagnostic tools</strong> – MediaTek (META), Samsung (Service Mode), etc.</li>
+      </ul>
+
+      <h3>Key Events to Look For</h3>
+      <div class="flow-steps" style="margin-bottom:1.2rem;">
+        <div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><span class="fs-msg">Emergency number detection</span><span class="fs-desc">Logs show “Emergency number: 911” or “ECCM” (Emergency Call Codes Match).</span></div></div>
+        <div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><span class="fs-msg">Emergency attach / registration</span><span class="fs-desc">NAS layer indicates “Attach type: EPS emergency attach” or “Registration type: Emergency”.</span></div></div>
+        <div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><span class="fs-msg">PDN / PDU session with emergency APN</span><span class="fs-desc">APN = “sos” or “emergency” ; QoS = QCI‑1/5QI‑1, ARP=1.</span></div></div>
+        <div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><span class="fs-msg">SIP INVITE with sos URN</span><span class="fs-desc">IMS logs show <code>INVITE sip:urn:service:sos</code> and <code>Priority: emergency</code> header.</span></div></div>
+        <div class="flow-step"><div class="flow-step-num">5</div><div class="flow-step-body"><span class="fs-msg">Location retrieval (LPP / RRLP)</span><span class="fs-desc">LPP messages (RequestLocationInformation / ProvideLocationInformation) with A‑GNSS or OTDOA data.</span></div></div>
+        <div class="flow-step"><div class="flow-step-num">6</div><div class="flow-step-body"><span class="fs-msg">PIDF‑LO generation</span><span class="fs-desc">SIP <code>Geolocation</code> header containing presence XML with coordinates.</span></div></div>
+      </div>
+
+      <h3>Sample Log Analysis</h3>
+      <p>Below are excerpts from an Android <code>logcat</code> during a successful E911 call (LTE, with SIM).</p>
+      <div class="msg-fmt">
+        <div class="mf-row"><span class="mf-f">TelephonyProvider</span><span class="mf-v a">Emergency number: 911</span></div>
+        <div class="mf-row"><span class="mf-f">RILJ</span><span class="mf-v g">[3996] REQUEST_EMERGENCY_SETUP (apn: sos)</span></div>
+        <div class="mf-row"><span class="mf-f">NAS</span><span class="mf-v">EPS attach type = 3 (Emergency)</span></div>
+        <div class="mf-row"><span class="mf-f">RILJ</span><span class="mf-v b">[3997] REQUEST_SETUP_DATA_CALL (apn: sos, qci: 1)</span></div>
+        <hr class="mf-sep">
+        <div class="mf-row"><span class="mf-f">IMS‑SIP</span><span class="mf-v r">INVITE urn:service:sos</span></div>
+        <div class="mf-row"><span class="mf-f">IMS‑SIP</span><span class="mf-v">P‑Priority: emergency</span></div>
+        <div class="mf-row"><span class="mf-f">IMS‑SIP</span><span class="mf-v g">Geolocation: &lt;pidf‑lo&gt;...&lt;/pidf‑lo&gt;</span></div>
+        <hr class="mf-sep">
+        <div class="mf-row"><span class="mf-f">LPP</span><span class="mf-v a">RequestLocationInformation (A‑GNSS, OTDOA)</span></div>
+        <div class="mf-row"><span class="mf-f">LPP</span><span class="mf-v g">ProvideLocationInformation (lat: 37.123°, lon: -122.456°, unc: 10m)</span></div>
+        <hr class="mf-sep">
+        <div class="mf-row"><span class="mf-f">RILJ</span><span class="mf-v">[4012] Data connection successful (QCI‑1)</span></div>
+        <div class="mf-row"><span class="mf-f">VoiceCall</span><span class="mf-v g">Call state: ACTIVE (emergency)</span></div>
+      </div>
+
+      <p><strong>No‑SIM case</strong> logs will show <span class="vg">“Attach type: emergency no‑SIM”</span>, <span class="vg">“Authentication: skip”</span>, and IMEI instead of IMSI. Callback is not possible, so no post‑call registration timer is kept.</p>
+
+      <h3>Tools & Tips</h3>
+      <ul style="color:var(--dk-text2); margin-left:1.2rem; margin-bottom:1rem;">
+        <li><strong>logcat</strong> – Filter by <code>Emergency</code>, <code>ECCM</code>, <code>RILJ</code>, <code>IMS</code>, <code>LPP</code>.</li>
+        <li><strong>QXDM/QCAT</strong> – Look for NAS EMM messages (Attach Request/Reject, PDN Connectivity) and RRC messages (RRCConnectionRequest with establishmentCause = <em>emergency</em>).</li>
+        <li><strong>Wireshark</strong> – On tethered mode, capture SIP traffic; filter <code>sip</code> and look for <code>urn:service:sos</code> in the Request‑URI.</li>
+        <li><strong>Cross‑reference with call flows</strong> – Match the logged steps against the diagrams on this site to identify missing or rejected messages.</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="ico">📱</span>
+        <div class="callout-content"><strong>Debugging hint</strong> – On Android, <code>adb logcat -b all -d > bugreport.txt</code> captures all buffers. Use <code>grep -i emergency</code> to quickly locate emergency‑related entries.</div>
+      </div>
+
+      <!-- ========== END NEW SECTION ========== -->
+
       <div class="art-hr"></div>
 
       <h2 id="a-specs">Key Standards Reference</h2>
@@ -1231,6 +1290,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--dk-bg); color
           <li class="sub"><a href="#a-wea-geo">WEA Geo-Targeting</a></li>
           <li class="sub"><a href="#a-cmas-5g">CMAS in 5G NR</a></li>
           <li><a href="#a-timeline">Evolution Timeline</a></li>
+          <!-- NEW TOC ENTRY -->
+          <li><a href="#a-log-analysis">Analyzing E911 Logs</a></li>
           <li><a href="#a-specs">Standards Reference</a></li>
         </ul>
       </div>
